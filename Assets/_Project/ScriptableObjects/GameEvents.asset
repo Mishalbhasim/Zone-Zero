@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 062f0ac7cd422974da8803b9b6d189d7, type: 3}
+  m_Name: GameEvents
+  m_EditorClassIdentifier: 
+  OnMatchStarted: {fileID: 0}
+  OnMatchEnded: {fileID: 0}
+  OnGamePaused: {fileID: 0}
+  OnGameResumed: {fileID: 0}
+  OnPlayerDamaged: {fileID: 0}
+  OnPlayerDied: {fileID: 0}
+  OnPlayerRespawned: {fileID: 0}
+  OnHealthChanged: {fileID: 0}
+  OnPlayerKill: {fileID: 0}
+  OnPlayerDeath: {fileID: 0}
+  OnShowScreen: {fileID: 0}
