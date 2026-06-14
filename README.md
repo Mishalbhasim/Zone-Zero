@@ -1,105 +1,91 @@
-# Zone Zero Arena 🎮
+# Zone Zero Arena
 
-A third-person **3D mobile arena shooter** built in Unity (C#) with NavMesh AI enemies, a state machine player controller, and mobile-first controls.
-
----
-
-## 🕹️ Gameplay
-
-Survive waves of AI-driven enemies in a 3D arena environment. Move, sprint, jump, and shoot — all optimized for mobile touchscreen input.
-
-**Platforms:** Android · WebGL  
-**Engine:** Unity 2022.3 (LTS) · C#
+A third-person 3D mobile arena shooter built in Unity (C#). Still in active development — this is my first attempt at building a complete game with multiplayer, AI enemies, and an event-driven architecture.
 
 ---
 
-## ⚙️ Technical Highlights
+## What It Is
 
-### 🧠 PlayerStateMachine
-Clean state-based player controller handling:
-- Idle / Move / Sprint / Jump / Shoot states
-- Smooth transitions with no spaghetti logic
-- Fully decoupled from UI and AI systems
+Players survive in a 3D arena against AI-driven enemies. The zone shrinks over time and deals damage, forcing players to keep moving. Built for Android with mobile touch controls.
 
-### 🤖 NavMesh AI
-- Enemies navigate dynamically around obstacles using Unity's NavMesh system
-- AI agents chase, pathfind, and react to player position in real time
-
-### 📱 Mobile Input System
-- Virtual joystick for movement
-- On-screen action buttons (Shoot, Jump)
-- Custom `MobileInputHandler` script decoupled from player logic
-
-### 🖥️ HUD System
-- Real-time health bar
-- Score display
-- Clean canvas-based UI optimized for mobile resolutions
-
-### ☁️ PlayFab Backend
-- Player authentication via Microsoft PlayFab
-- Session and data management integrated
+Platform: Android, WebGL  
+Engine: Unity 2022.3, C#  
+Status: Work in Progress
 
 ---
 
-## 📁 Project Structure
+## What I Built
+
+### Player Health and State System (PlayerStateMachine.cs)
+
+Manages the player's core survival logic — tracks HP, listens to zone damage ticks via an EventBus, handles shooting by delegating to a WeaponBase component, and triggers death by disabling the movement controller and playing a death animation.
+
+```csharp
+void OnEnable() => EventBus.OnZoneDamageTick += TakeDamage;
+void OnDisable() => EventBus.OnZoneDamageTick -= TakeDamage;
+```
+
+### EventBus Architecture
+
+Decoupled event system that connects zone damage, player health, UI, and game state without tight dependencies between systems.
+
+### NavMesh AI and BotManager
+
+Enemies spawn and navigate dynamically using Unity's NavMesh. BotManager handles spawning logic and bot lifecycle in the arena.
+
+### Terrain
+
+Custom terrain built and painted inside Unity. Getting it centered and optimized for mobile took a few iterations — performance on mid-range Android was the main challenge.
+
+### Mobile Controls
+
+Virtual joystick and on-screen buttons for touch input. Movement uses Unity Starter Assets (ThirdPersonController), extended with custom shooting and health logic.
+
+---
+
+## Still Working On
+
+- Multiplayer sync using Photon
+- Full HUD (health bar, zone timer, kill feed)
+- Performance optimization for mid-range Android devices
+- Complete game loop: match start, win/loss conditions, respawn
+
+---
+
+## Project Structure
 
 ```
 Assets/
 ├── _project/
 │   ├── Scripts/
-│   │   ├── Core/         # Game loop, base classes
-│   │   ├── Bot/          # AI NavMesh logic
-│   │   ├── Events/       # Event system
-│   │   ├── Managers/     # Game, UI, Audio managers
-│   │   ├── Network/      # PlayFab integration
-│   │   └── Interfaces/   # Shared contracts
-│   ├── Scenes/           # Arena scenes
-│   ├── Prefabs/          # Player, Enemy, HUD prefabs
+│   │   ├── Core/         
+│   │   ├── Bot/          
+│   │   ├── Events/       
+│   │   ├── Managers/     
+│   │   ├── Network/      
+│   │   └── Interfaces/
+│   ├── Scenes/
+│   ├── Prefabs/
 │   └── ScriptableObjects/
-├── Photon/               # Multiplayer support
-├── PlayFabSDK/           # Backend integration
-└── StarterAssets/        # Character controller base
+├── Photon/
+├── PlayFabSDK/
+└── StarterAssets/
 ```
 
 ---
 
-## 🚀 Getting Started
+## What I Learned
 
-### Prerequisites
-- Unity 2022.3 LTS or higher
-- Android Build Support module installed
-
-### Run Locally
-```bash
-git clone https://github.com/Mishalbhasim/Zone-Zero.git
-```
-1. Open project in Unity Hub
-2. Open `Assets/_project/Scenes/Arena_01`
-3. Press Play in the Editor
-
-### Android Build
-1. File → Build Settings → Android
-2. Switch Platform → Build and Run
+Building an EventBus to decouple systems cleanly was something I hadn't done before — having zone damage talk to player health without direct references made the code much easier to manage. Terrain creation and optimization for mobile was harder than I expected. I also learned how to extend third-party packages like Starter Assets with custom game logic without breaking the original functionality.
 
 ---
 
-## 🎯 What I Learned Building This
+## Developer
 
-- Architecting a **PlayerStateMachine** to manage complex state transitions cleanly
-- Implementing **NavMesh AI** with dynamic obstacle avoidance
-- Designing **mobile-first input** systems decoupled from core gameplay logic
-- Integrating a **backend service (PlayFab)** for auth and session management
-- Optimizing Unity scenes for **Android performance**
+Mishal Bhasim T M  
+itch.io: mishal-bhasim-t-m.itch.io  
+GitHub: github.com/Mishalbhasim  
+LinkedIn: linkedin.com/in/mishal-bhasim  
+Email: Mishalbhasim5@gmail.com
 
----
-
-## 👨‍💻 Developer
-
-**Mishal Bhasim T M**  
-Unity Game Developer  
-🌐 [Portfolio](https://mishal-bhasim-t-m.itch.io) · [GitHub](https://github.com/Mishalbhasim) · [LinkedIn](https://linkedin.com/in/mishal-bhasim)  
-📧 Mishalbhasim5@gmail.com
-
----
-
-*Built at Brototype Game Dev Bootcamp · 2024–2025*
+Built at Brototype Game Dev Bootcamp, 2024–present
