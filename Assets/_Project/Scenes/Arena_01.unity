@@ -387,22 +387,22 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 4e-45
+      value: 2.1003e-41
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 0
+      value: 1.561202e-39
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: -2.2934264e-35
+      value: 6e-44
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 6e-44
+      value: 1.5e-44
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

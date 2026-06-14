@@ -95,9 +95,7 @@ public class ZoneManager : SceneSingleton<ZoneManager>
 
         if (dist > CurrentRadius)
         {
-            var playerSM = player.GetComponent<PlayerStateMachine>();
-            if (playerSM != null)
-                playerSM.TakeDamage(_damagePerSecond);
+           
 
             EventBus.ZoneDamageTick(_damagePerSecond);
         }

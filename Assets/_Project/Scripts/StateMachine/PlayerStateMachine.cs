@@ -51,6 +51,7 @@ public class PlayerStateMachine : MonoBehaviour
         if (tpc != null) tpc.enabled = false;
         // play death animation
         var anim = GetComponentInChildren<Animator>();
-        if (anim != null) anim.SetTrigger("Dead");
+        if (anim != null && anim.runtimeAnimatorController != null)
+            anim.SetTrigger("Dead");
     }
 }
