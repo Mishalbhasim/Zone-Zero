@@ -30,7 +30,7 @@ public class SniperWeapon : WeaponBase
 
     protected override void Shoot()
     {
-        Ray ray = new Ray(_firePoint.position, _firePoint.forward);
+        Ray ray = new Ray(_firePoint.position, Camera.main.transform.forward);
         Debug.DrawRay(_firePoint.position, _firePoint.forward * Range, Color.blue, 0.5f);
         EventBus.WeaponFired("Sniper");
 

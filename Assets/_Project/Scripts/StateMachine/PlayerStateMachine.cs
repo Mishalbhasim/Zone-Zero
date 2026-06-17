@@ -52,6 +52,13 @@ public class PlayerStateMachine : MonoBehaviour
         // play death animation
         var anim = GetComponentInChildren<Animator>();
         if (anim != null && anim.runtimeAnimatorController != null)
-            anim.SetTrigger("Dead");
+        {
+            bool hasParam = false;
+            foreach (var p in anim.parameters)
+                if (p.name == "Dead") { hasParam = true; break; }
+
+            if (hasParam)
+                anim.SetTrigger("Dead");
+        }
     }
 }

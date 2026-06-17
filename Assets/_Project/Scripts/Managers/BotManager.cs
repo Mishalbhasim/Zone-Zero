@@ -16,6 +16,13 @@ public class BotManager : SceneSingleton<BotManager>
 
     private List<GameObject> _bots = new List<GameObject>();
 
+    [Header("LOD Settings")]
+    [SerializeField] private float _activeRange = 60f;
+    [SerializeField] private int _maxActiveBots = 12;
+    [SerializeField] private float _lodUpdateInterval = 1f;
+
+    private float _lodTimer;
+
     void Start()
     {
         EventBus.OnBotKilled += OnBotKilled;
@@ -25,6 +32,57 @@ public class BotManager : SceneSingleton<BotManager>
         // and seed with PhotonNetwork.CurrentRoom.CustomProperties["mapSeed"]
         int seed = 12345;
         SpawnBots(seed, _testRealPlayerCount);
+    }
+
+    void Update()
+    {
+        _lodTimer += Time.deltaTime;
+        if (_lodTimer < _lodUpdateInterval) return;
+        _lodTimer = 0f;
+
+        UpdateBotLOD();
+    }
+
+    private void UpdateBotLOD()
+    {
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj == null) return;
+
+        Vector3 playerPos = playerObj.transform.position;
+
+        // sort bots by distance to player
+        var sortedBots = new List<(GameObject bot, float dist)>();
+
+        foreach (var bot in _bots)
+        {
+            if (bot == null || !bot.activeSelf) continue;
+            float dist = Vector3.Distance(bot.transform.position, playerPos);
+            sortedBots.Add((bot, dist));
+        }
+
+        sortedBots.Sort((a, b) => a.dist.CompareTo(b.dist));
+
+        for (int i = 0; i < sortedBots.Count; i++)
+        {
+            var botSM = sortedBots[i].bot.GetComponent<BotStateMachine>();
+            if (botSM == null) continue;
+
+            bool shouldBeActive = i < _maxActiveBots &&
+                                   sortedBots[i].dist <= _activeRange;
+
+            SetBotActive(botSM, shouldBeActive);
+        }
+    }
+
+    private void SetBotActive(BotStateMachine botSM, bool active)
+    {
+        if (botSM.IsActive == active) return;  // no change needed
+
+        botSM.IsActive = active;
+        botSM.Agent.enabled = active;
+
+        if (!active)
+            botSM.BotAnimator?.SetFloat(botSM.SpeedHash, 0f);
     }
 
     public void SpawnBots(int seed, int realPlayerCount)

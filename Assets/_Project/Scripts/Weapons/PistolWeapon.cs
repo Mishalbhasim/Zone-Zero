@@ -3,47 +3,29 @@ using UnityEngine;
 public class PistolWeapon : WeaponBase
 {
     [SerializeField] private GameObject _hitEffectPrefab;
+
     protected override void Shoot()
     {
-        // raycast from fire point forward
-        Ray ray = new Ray(_firePoint.position, _firePoint.forward);
-        RaycastHit hit;
+        Transform cam = Camera.main.transform;
+        Ray ray = new Ray(_firePoint.position, cam.forward);
 
-        // debug line — visible in Scene view
-        Debug.DrawRay(_firePoint.position,
-                      _firePoint.forward * Range,
-                      Color.red, 0.5f);
-
+        Debug.DrawRay(_firePoint.position, cam.forward * Range, Color.red, 0.5f);
         EventBus.WeaponFired("Pistol");
 
-        if (Physics.Raycast(ray, out hit, Range))
-        {
-            Debug.Log($"[Pistol] Hit: {hit.collider.gameObject.name}");
+        if (!Physics.Raycast(ray, out RaycastHit hit, Range)) return;
 
-            // spawn hit effect
-            if (_hitEffectPrefab != null)
-                GameObject.Instantiate(
-                    _hitEffectPrefab,
-                    hit.point,
-                    Quaternion.LookRotation(hit.normal)
-                );
+        Debug.Log($"[Pistol] Hit: {hit.collider.gameObject.name}");
 
-            // check bot
-            var botSM = hit.collider.GetComponentInParent<BotStateMachine>();
-            if (botSM != null)
-            {
-                botSM.TakeDamage(Damage);
-                return;
-            }
+        // ignore self
+        if (hit.collider.transform.IsChildOf(transform.root)) return;
 
-            // check player
-            
-            var playerSM = hit.collider.GetComponent<PlayerStateMachine>();
-            if (playerSM != null)
-            {
-                playerSM.TakeDamage(Damage);
-                return;
-            }
-        }
+        if (_hitEffectPrefab != null)
+            Instantiate(_hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
+
+        var botSM = hit.collider.GetComponentInParent<BotStateMachine>();
+        if (botSM != null) { botSM.TakeDamage(Damage); return; }
+
+        var playerSM = hit.collider.GetComponentInParent<PlayerStateMachine>();
+        if (playerSM != null) playerSM.TakeDamage(Damage);
     }
 }

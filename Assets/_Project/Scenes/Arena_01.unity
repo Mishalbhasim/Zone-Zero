@@ -387,22 +387,22 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 2.1003e-41
+      value: 1.0239638e+12
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 1.561202e-39
+      value: 1.02e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 6e-44
+      value: 3.9e-44
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 1.5e-44
+      value: 1.0958e-41
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1553,7 +1553,10 @@ MonoBehaviour:
   _botPrefab: {fileID: 3742487928943417719, guid: a2bdc5a0f6cd8f5419e60f1c1fb7d9f4,
     type: 3}
   _totalSlots: 30
-  _testRealPlayerCount: 25
+  _testRealPlayerCount: 5
+  _activeRange: 60
+  _maxActiveBots: 12
+  _lodUpdateInterval: 1
 --- !u!114 &1345985537
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2596,11 +2599,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1059887302837665909, guid: 8383e31a10e794744a223f42cebe9d6f,
-        type: 3}
-      propertyPath: CameraAngleOverride
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3530994081273609796, guid: 8383e31a10e794744a223f42cebe9d6f,
         type: 3}
       propertyPath: m_LocalPosition.x

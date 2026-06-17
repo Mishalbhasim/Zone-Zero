@@ -8,6 +8,11 @@ public class BotStateMachine : MonoBehaviour
     public BotShootState ShootState { get; private set; }
     public BotDeadState DeadState { get; private set; }
 
+    [Header("LOD")]
+    public bool IsActive = true;
+    private float _lodCheckTimer;
+    private const float LOD_CHECK_INTERVAL = 1f;
+
     [Header("Detection")]
     public float DetectionRange = 40f;
     public float DetectionFOV = 120f;
@@ -52,11 +57,15 @@ public class BotStateMachine : MonoBehaviour
 
     void Update()
     {
+        if (!IsActive) return;  // sleeping bots skip everything
+
         _currentState?.Tick(Time.deltaTime);
 
         // detection 
         if (_currentState != ShootState && _currentState != DeadState)
             DetectPlayer();
+
+
     }
 
     private void DetectPlayer()
