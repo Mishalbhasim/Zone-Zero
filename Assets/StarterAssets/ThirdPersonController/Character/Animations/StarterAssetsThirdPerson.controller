@@ -588,7 +588,7 @@ AnimatorController:
   - serializedVersion: 5
     m_Name: Legs
     m_StateMachine: {fileID: -5602963042399094863}
-    m_Mask: {fileID: 0}
+    m_Mask: {fileID: 31900000, guid: bee8501c1072f2d41aa4b4c5bb816aed, type: 2}
     m_Motions: []
     m_Behaviours: []
     m_BlendingMode: 0
@@ -911,8 +911,8 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25000003
-  m_TransitionOffset: 0.4258962
+  m_TransitionDuration: 0.2500001
+  m_TransitionOffset: 0.4167958
   m_ExitTime: 0.590909
   m_HasExitTime: 1
   m_HasFixedDuration: 1
