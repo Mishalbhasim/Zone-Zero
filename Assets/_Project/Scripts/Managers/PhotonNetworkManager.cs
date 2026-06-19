@@ -78,8 +78,13 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
         // spawn player
         SpawnLocalPlayer();
-    }
-   
+
+        //spawn bots
+        if (PhotonNetwork.IsMasterClient)
+            BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
+    
+}
+
 
     private void SpawnLocalPlayer()
     {
