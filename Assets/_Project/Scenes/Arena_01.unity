@@ -387,22 +387,22 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 3.8580235e-36
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 1.1e-44
+      value: 1.02e-43
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 4.2217e-41
+      value: 3.6e-44
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 2.4e-44
+      value: 3.586e-41
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1548,6 +1548,7 @@ GameObject:
   - component: {fileID: 1345985534}
   - component: {fileID: 1345985539}
   - component: {fileID: 1345985540}
+  - component: {fileID: 1345985541}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1668,6 +1669,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerPrefab: {fileID: 7475396813665540527, guid: 8383e31a10e794744a223f42cebe9d6f,
     type: 3}
+--- !u!114 &1345985541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1345985533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 220f2b502d3ec754c966f9b44f07384e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1388033870
 GameObject:
   m_ObjectHideFlags: 0

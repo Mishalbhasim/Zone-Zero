@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class MatchManager : SceneSingleton<MatchManager>
@@ -9,7 +9,9 @@ public class MatchManager : SceneSingleton<MatchManager>
 
     void Start()
     {
-        EventBus.OnPlayerEliminated += OnPlayerEliminated;
+        // EliminationManager now drives eliminations — no direct EventBus sub needed
+        // Keep for solo/offline fallback only
+        EventBus.OnPlayerEliminated += OnPlayerEliminatedFallback;
     }
 
     public void StartCountdown(int totalPlayers)
@@ -36,34 +38,76 @@ public class MatchManager : SceneSingleton<MatchManager>
         Debug.Log("[MatchManager] Match Started!");
     }
 
-    private void OnPlayerEliminated(string playerId, int placement)
+    // ── Called by EliminationManager on master client ─────────────────────────
+
+    /// <summary>
+    /// Master client calls this when any player/bot is eliminated.
+    /// </summary>
+    public void OnEliminationReported(string eliminatedId, int placement)
     {
         PlayersAlive--;
-        EventBus.PlayersRemainingChanged(PlayersAlive);
+        PlayersAlive = Mathf.Max(0, PlayersAlive);
 
-        // last one standing wins
-        if (PlayersAlive <= 1 && IsMatchActive)
+        Debug.Log($"[MatchManager] Elimination reported: {eliminatedId} | Remaining: {PlayersAlive}");
+
+        CheckWinCondition();
+    }
+
+    /// <summary>
+    /// Non-master clients call this to sync PlayersAlive from RPC.
+    /// </summary>
+    public void SyncPlayersAlive(int count)
+    {
+        PlayersAlive = count;
+    }
+
+    // ── Win condition ──────────────────────────────────────────────────────────
+
+    private void CheckWinCondition()
+    {
+        if (!IsMatchActive) return;
+        if (PlayersAlive > 1) return;
+
+        IsMatchActive = false;
+
+        var winner = ScoreManager.Instance?.GetWinner();
+        if (winner != null)
         {
-            IsMatchActive = false;
-            var winner = ScoreManager.Instance.GetWinner();
-            if (winner != null)
-            {
-                ScoreManager.Instance.PlayerWon(winner.PlayerId);
-                EventBus.PlayerWon(winner.PlayerId);
-            }
+            ScoreManager.Instance.PlayerWon(winner.PlayerId);
+            EventBus.PlayerWon(winner.PlayerId);
+            Debug.Log($"[MatchManager] Winner: {winner.PlayerId}");
+        }
+        else
+        {
+            // no winner found — last bot standing or edge case
+            EventBus.PlayerWon("Unknown");
+            Debug.LogWarning("[MatchManager] Win condition met but no winner found in ScoreManager.");
         }
     }
 
     public void EndMatch()
     {
         IsMatchActive = false;
-        var winner = ScoreManager.Instance.GetWinner();
+        var winner = ScoreManager.Instance?.GetWinner();
         if (winner != null)
             EventBus.PlayerWon(winner.PlayerId);
     }
 
+    // ── Solo/offline fallback ─────────────────────────────────────────────────
+
+    // Only fires if EliminationManager is not present (solo play without Photon)
+    private void OnPlayerEliminatedFallback(string playerId, int placement)
+    {
+        if (Photon.Pun.PhotonNetwork.IsConnected) return; // Photon handles it
+        PlayersAlive--;
+        PlayersAlive = Mathf.Max(0, PlayersAlive);
+        EventBus.PlayersRemainingChanged(PlayersAlive);
+        CheckWinCondition();
+    }
+
     protected override void OnDestroy()
     {
-        EventBus.OnPlayerEliminated -= OnPlayerEliminated;
+        EventBus.OnPlayerEliminated -= OnPlayerEliminatedFallback;
+        base.OnDestroy();
     }
 }
