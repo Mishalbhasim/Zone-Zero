@@ -19,7 +19,7 @@ public class PhotonPlayerSetup : MonoBehaviourPun
             return;
         }
 
-        // local player → wire camera
+        // wire camera for local player
         var vcam = FindObjectOfType<CinemachineVirtualCamera>();
         if (vcam != null)
         {

@@ -9,9 +9,9 @@ public class MatchManager : SceneSingleton<MatchManager>
 
     void Start()
     {
-        // EliminationManager now drives eliminations — no direct EventBus sub needed
-        // Keep for solo/offline fallback only
-        EventBus.OnPlayerEliminated += OnPlayerEliminatedFallback;
+        
+        
+        
     }
 
     public void StartCountdown(int totalPlayers)
@@ -38,11 +38,12 @@ public class MatchManager : SceneSingleton<MatchManager>
         Debug.Log("[MatchManager] Match Started!");
     }
 
-    // ── Called by EliminationManager on master client ─────────────────────────
+    
 
-    /// <summary>
-    /// Master client calls this when any player/bot is eliminated.
-    /// </summary>
+ 
+    
+    // Master client calls this when any player/bot is eliminated.
+   
     public void OnEliminationReported(string eliminatedId, int placement)
     {
         PlayersAlive--;
@@ -53,15 +54,15 @@ public class MatchManager : SceneSingleton<MatchManager>
         CheckWinCondition();
     }
 
-    /// <summary>
-    /// Non-master clients call this to sync PlayersAlive from RPC.
-    /// </summary>
+    
+    // Non-master clients call this to sync PlayersAlive from RPC.
+    
     public void SyncPlayersAlive(int count)
     {
         PlayersAlive = count;
     }
 
-    // ── Win condition ──────────────────────────────────────────────────────────
+    //Win condition
 
     private void CheckWinCondition()
     {
@@ -93,21 +94,11 @@ public class MatchManager : SceneSingleton<MatchManager>
             EventBus.PlayerWon(winner.PlayerId);
     }
 
-    // ── Solo/offline fallback ─────────────────────────────────────────────────
-
-    // Only fires if EliminationManager is not present (solo play without Photon)
-    private void OnPlayerEliminatedFallback(string playerId, int placement)
-    {
-        if (Photon.Pun.PhotonNetwork.IsConnected) return; // Photon handles it
-        PlayersAlive--;
-        PlayersAlive = Mathf.Max(0, PlayersAlive);
-        EventBus.PlayersRemainingChanged(PlayersAlive);
-        CheckWinCondition();
-    }
+    
 
     protected override void OnDestroy()
     {
-        EventBus.OnPlayerEliminated -= OnPlayerEliminatedFallback;
+       
         base.OnDestroy();
     }
 }

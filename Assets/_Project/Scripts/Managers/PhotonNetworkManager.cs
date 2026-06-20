@@ -36,7 +36,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         };
 
         PhotonNetwork.JoinOrCreateRoom(
-            $"ZZ_{Random.Range(1000, 9999)}",
+            "ZoneZero_Dev",
             options,
             TypedLobby.Default
         );
