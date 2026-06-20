@@ -23,12 +23,7 @@ public class BotManager : SceneSingleton<BotManager>
     [SerializeField] private float _lodUpdateInterval = 1f;
     private float _lodTimer;
 
-    void Start()
-    {
-        EventBus.OnBotKilled += OnBotKilled;
-
-        
-    }
+  
 
     void Update()
     {
@@ -91,18 +86,17 @@ public class BotManager : SceneSingleton<BotManager>
 
         // initialize match with total players including bot and players
         int totalAlive = botsToSpawn + realPlayerCount;
-        MatchManager.Instance?.StartCountdown(totalAlive);
+        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) // should only run on master cl;ient
+            MatchManager.Instance?.StartCountdown(totalAlive);
     }
 
-    private void OnBotKilled(int botId)
+    
+
+    public void DecrementBotsRemaining()
     {
         BotsRemaining--;
         Debug.Log($"[BotManager] Bot killed. Remaining: {BotsRemaining}");
     }
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-        EventBus.OnBotKilled -= OnBotKilled;
-    }
+    
 }

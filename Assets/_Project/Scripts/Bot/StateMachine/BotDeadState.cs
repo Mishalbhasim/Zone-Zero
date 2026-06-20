@@ -14,17 +14,11 @@ public class BotDeadState : IState
         _sm.Agent.enabled = false;
         _sm.BotAnimator?.SetBool(_sm.DeadHash, true);
 
-        // fire legacy event (HUD kill feed etc still use this)
-        EventBus.BotKilled(_sm.gameObject.GetInstanceID());
+        
+        string botName = _sm.gameObject.name;
 
-        // report elimination to MatchManager via EliminationManager
-        // master client owns elimination count
-        if (Photon.Pun.PhotonNetwork.IsMasterClient)
-        {
-            string botId = "Bot_" + _sm.gameObject.GetInstanceID();
-            int placement = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 1;
-            EliminationManager.Instance?.ReportElimination(botId, placement);
-        }
+        // report bot death to all clients
+        EliminationManager.Instance?.ReportBotDeath(botName);
 
         _sm.gameObject.SetActive(false);
     }

@@ -42,8 +42,7 @@ public class MatchManager : SceneSingleton<MatchManager>
 
  
     
-    // Master client calls this when any player/bot is eliminated.
-   
+    // Master client calls this when any player orbot is eliminated.
     public void OnEliminationReported(string eliminatedId, int placement)
     {
         PlayersAlive--;
@@ -56,7 +55,6 @@ public class MatchManager : SceneSingleton<MatchManager>
 
     
     // Non-master clients call this to sync PlayersAlive from RPC.
-    
     public void SyncPlayersAlive(int count)
     {
         PlayersAlive = count;
