@@ -41,6 +41,8 @@ MonoBehaviour:
   - RespawnSpaceship
   - RPC_PlayerDied
   - RPC_SyncElimination
+  - RPC_RequestBotDeath
+  - RPC_SyncBotDeath
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

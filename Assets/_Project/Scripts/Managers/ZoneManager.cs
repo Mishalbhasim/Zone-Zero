@@ -28,7 +28,7 @@ public class ZoneManager : SceneSingleton<ZoneManager>
     {
         // zone starts covering the whole map
         CurrentCenter = Vector3.zero;
-        CurrentRadius = _mapSize * 0.5f;
+        CurrentRadius = _mapSize * 0.75f;
 
         StartCoroutine(ZoneRoutine());
     }
