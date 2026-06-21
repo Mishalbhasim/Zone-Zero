@@ -42,7 +42,7 @@ public class ZoneManager : SceneSingleton<ZoneManager>
 
             // pick next zone
             _nextRadius = _radiusSteps[phase];
-            _nextCenter = PickNextCenter(CurrentCenter, CurrentRadius, _nextRadius);
+            _nextCenter = PickNextCenter(CurrentCenter, CurrentRadius, _nextRadius, phase);
 
             EventBus.ZonePhaseChanged(phase + 1);
             EventBus.ZoneShrinkStarted(CurrentCenter, CurrentRadius,
@@ -101,11 +101,12 @@ public class ZoneManager : SceneSingleton<ZoneManager>
         }
     }
 
-    private Vector3 PickNextCenter(Vector3 currentCenter, float currentRadius, float nextRadius)
+    private Vector3 PickNextCenter(Vector3 currentCenter, float currentRadius, float nextRadius, int phase)
     {
-        // new circle must fit inside the old circle
         float maxOffset = Mathf.Max(0, currentRadius - nextRadius);
-        Vector2 randomOffset = Random.insideUnitCircle * maxOffset;
-        return currentCenter + new Vector3(randomOffset.x, 0, randomOffset.y);
+        var rng = new System.Random(PhotonNetworkManager.Instance.MapSeed + phase);
+        float x = (float)(rng.NextDouble() * 2 - 1) * maxOffset;
+        float z = (float)(rng.NextDouble() * 2 - 1) * maxOffset;
+        return currentCenter + new Vector3(x, 0, z);
     }
 }
