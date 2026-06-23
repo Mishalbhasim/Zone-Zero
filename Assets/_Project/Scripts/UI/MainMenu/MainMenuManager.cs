@@ -36,10 +36,9 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnPlayClicked()
     {
-        Debug.Log("[MainMenu] Play clicked → loading Lobby");
-        // TODO Day 23: load Lobby scene
-        // For now → go straight to Arena
-        SceneManager.LoadScene("Arena_01");
+        Debug.Log("[MainMenu] Play clicked → joining room");
+        PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+        SceneManager.LoadScene("Lobby");
     }
 
     private void OnFriendsClicked()

@@ -437,7 +437,7 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 5.1604e-41
+      value: 463
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
@@ -447,12 +447,12 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 6e-44
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 4e-45
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1597,9 +1597,9 @@ GameObject:
   - component: {fileID: 1345985535}
   - component: {fileID: 1345985534}
   - component: {fileID: 1345985539}
-  - component: {fileID: 1345985540}
   - component: {fileID: 1345985541}
   - component: {fileID: 1345985542}
+  - component: {fileID: 1345985543}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -1706,20 +1706,6 @@ MonoBehaviour:
   _waitTime: 30
   _shrinkTime: 25
   _damagePerSecond: 2
---- !u!114 &1345985540
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1345985533}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64d02cf8be5adbd419f351af0b9f3ac3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _playerPrefab: {fileID: 7475396813665540527, guid: 8383e31a10e794744a223f42cebe9d6f,
-    type: 3}
 --- !u!114 &1345985541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1754,6 +1740,18 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &1345985543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1345985533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30b7c00ba24d9424cba5139e596b981b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1388033870
 GameObject:
   m_ObjectHideFlags: 0
@@ -1853,50 +1851,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 2110688452}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1575330638
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1575330639}
-  - component: {fileID: 1575330640}
-  m_Layer: 0
-  m_Name: GameStarter
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1575330639
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1575330638}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 294.65704, y: 110.460144, z: 270.85406}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1575330640
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1575330638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5c04da79a86398a40a0e4f03d55d49a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1580936940
 GameObject:
   m_ObjectHideFlags: 0
@@ -2788,6 +2742,5 @@ SceneRoots:
   - {fileID: 2110688452}
   - {fileID: 1746968493}
   - {fileID: 461649808}
-  - {fileID: 1575330639}
   - {fileID: 1171578955}
   - {fileID: 252856083}

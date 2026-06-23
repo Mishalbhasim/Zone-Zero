@@ -42,6 +42,8 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         );
     }
 
+
+
     public void LeaveRoom() => PhotonNetwork.LeaveRoom();
 
     // ── Callbacks ────────────────────────────
@@ -62,7 +64,6 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     {
         Debug.Log($"[PhotonNetworkManager] Joined room. Seed: {MapSeed}");
 
-        // master client sets the seed
         if (PhotonNetwork.IsMasterClient)
         {
             var props = new ExitGames.Client.Photon.Hashtable();
@@ -71,18 +72,16 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         }
         else
         {
-            // other players read seed from room
             if (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("seed", out object seed))
                 MapSeed = (int)seed;
         }
+    }
 
-        // spawn player
+    // called when Arena scene loads
+    public void OnArenaLoaded()
+    {
         SpawnLocalPlayer();
-
-        //spawn bots ( every client use same seed but localy)
-        
         BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
-
     }
 
 
