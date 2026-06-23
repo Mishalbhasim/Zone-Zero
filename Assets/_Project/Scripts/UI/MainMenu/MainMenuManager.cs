@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Photon.Pun;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -37,7 +38,16 @@ public class MainMenuManager : MonoBehaviour
     private void OnPlayClicked()
     {
         Debug.Log("[MainMenu] Play clicked → joining room");
-        PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+
+        if (PhotonNetwork.InRoom)
+        {
+            // leave room first, then lobby will handle joining
+            PhotonNetwork.LeaveRoom();
+        }
+
+        if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
+            PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+
         SceneManager.LoadScene("Lobby");
     }
 

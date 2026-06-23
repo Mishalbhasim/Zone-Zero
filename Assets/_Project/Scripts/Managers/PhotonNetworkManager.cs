@@ -17,6 +17,8 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     {
         base.Awake();
         PhotonNetwork.AddCallbackTarget(this);
+
+       
     }
 
     public void Connect()

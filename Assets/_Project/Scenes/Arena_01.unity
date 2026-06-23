@@ -266,7 +266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _zoneMaterial: {fileID: 2100000, guid: 15001f25531035b4d996349035584b78, type: 2}
-  _wallHeight: 80
+  _wallHeight: 60
   _cylinderSegments: 64
   _pulseSpeed: 2
   _pulseIntensity: 0.05
