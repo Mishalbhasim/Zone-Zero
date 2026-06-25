@@ -31,17 +31,16 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void JoinOrCreateRoom()
     {
         MapSeed = Random.Range(0, 99999);
+        // try joining random room first
+        PhotonNetwork.JoinRandomRoom();
+    }
 
-        var options = new RoomOptions
-        {
-            MaxPlayers = 30
-        };
-
-        PhotonNetwork.JoinOrCreateRoom(
-            "ZoneZero_Dev",
-            options,
-            TypedLobby.Default
-        );
+    public void OnJoinRandomFailed(short code, string msg)
+    {
+        Debug.Log("[PhotonNetworkManager] No room found → creating new room");
+        var options = new RoomOptions { MaxPlayers = 30 };
+        string roomName = $"ZZ_{Random.Range(1000, 9999)}";
+        PhotonNetwork.CreateRoom(roomName, options, TypedLobby.Default);
     }
 
 
@@ -53,8 +52,8 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void OnConnectedToMaster()
     {
-        Debug.Log("[PhotonNetworkManager] Connected.");
-        JoinOrCreateRoom();
+        
+       
     }
 
     public void OnDisconnected(DisconnectCause cause)
@@ -103,7 +102,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void OnCreateRoomFailed(short code, string msg) { }
     public void OnLeftRoom() { }
     public void OnFriendListUpdate(System.Collections.Generic.List<FriendInfo> list) { }
-    public void OnJoinRandomFailed(short code, string msg) { }
+    
     public void OnRegionListReceived(RegionHandler rh) { }
     public void OnCustomAuthenticationResponse(System.Collections.Generic.Dictionary<string, object> d) { }
     public void OnCustomAuthenticationFailed(string msg) { }
