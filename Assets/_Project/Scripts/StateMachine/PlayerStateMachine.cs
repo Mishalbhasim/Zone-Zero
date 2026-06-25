@@ -65,6 +65,10 @@ public class PlayerStateMachine : MonoBehaviourPun
         // play death anim locally
         PlayDeathAnim();
 
+        // fire local event for HUD death screen
+        if (photonView.IsMine)
+            EventBus.PlayerDied();
+
         // notify all clients via RPC
         photonView.RPC("RPC_PlayerDied", RpcTarget.All, photonView.Owner.UserId);
     }

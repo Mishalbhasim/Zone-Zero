@@ -8,10 +8,6 @@ public class BotManager : SceneSingleton<BotManager>
     [SerializeField] private GameObject _botPrefab;
     [SerializeField] private int _totalSlots = 30;
 
-    [Header("Testing Only — Remove when Photon connected")]
-    [Tooltip("Only used if not connected to Photon")]
-    [SerializeField] private int _testRealPlayerCount = 1;
-
     public int TotalBots { get; private set; }
     public int BotsRemaining { get; private set; }
 

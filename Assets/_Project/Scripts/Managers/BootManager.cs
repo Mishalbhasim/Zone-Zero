@@ -11,6 +11,8 @@ public class BootManager : MonoBehaviour
 
     void Start()
     {
+       
+
 
         PhotonNetworkManager.Instance?.Connect();
 

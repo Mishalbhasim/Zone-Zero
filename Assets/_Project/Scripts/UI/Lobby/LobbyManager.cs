@@ -35,6 +35,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         _cancelButton?.onClick.AddListener(OnCancelClicked);
         _timer = _countdownSeconds;
 
+   
+
         if (PhotonNetwork.InRoom)
             OnJoinedRoom();
         else if (PhotonNetwork.IsConnectedAndReady)

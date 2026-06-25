@@ -104,7 +104,12 @@ public class ZoneManager : SceneSingleton<ZoneManager>
     private Vector3 PickNextCenter(Vector3 currentCenter, float currentRadius, float nextRadius, int phase)
     {
         float maxOffset = Mathf.Max(0, currentRadius - nextRadius);
-        var rng = new System.Random(PhotonNetworkManager.Instance.MapSeed + phase);
+
+        int seed = 12345; // fallback seed
+        if (PhotonNetworkManager.Instance != null)
+            seed = PhotonNetworkManager.Instance.MapSeed;
+
+        var rng = new System.Random(seed + phase);
         float x = (float)(rng.NextDouble() * 2 - 1) * maxOffset;
         float z = (float)(rng.NextDouble() * 2 - 1) * maxOffset;
         return currentCenter + new Vector3(x, 0, z);
