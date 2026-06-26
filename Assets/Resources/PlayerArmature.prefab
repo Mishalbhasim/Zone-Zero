@@ -1980,6 +1980,7 @@ GameObject:
   - component: {fileID: 7599907173977197956}
   - component: {fileID: 2603838171010923791}
   - component: {fileID: -6298034941651372997}
+  - component: {fileID: 3645627595419584976}
   m_Layer: 8
   m_Name: PlayerArmature
   m_TagString: Player
@@ -2247,6 +2248,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHP: 100
   CurrentWeapon: {fileID: 4672284405874312719}
+  spine: {fileID: 0}
+  spineRotation: 10
 --- !u!114 &637605980388025893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2356,6 +2359,21 @@ MonoBehaviour:
     LayerIndex: 0
   - SynchronizeType: 0
     LayerIndex: 1
+--- !u!114 &3645627595419584976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7475396813665540527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70baaa63184e08145a51172875fd44fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _aimTarget: {fileID: 0}
+  _aimDistance: 50
+  _isAiming: 0
 --- !u!1 &7569732856720264329
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Photon.Pun;
+using StarterAssets;
 
 public class PlayerStateMachine : MonoBehaviourPun
 {
@@ -12,18 +13,77 @@ public class PlayerStateMachine : MonoBehaviourPun
 
     private bool _isDead;
 
+    // aim
+    private Animator _animator;
+    private ThirdPersonController _tpc;
+    private float _aimTimer;
+    private const float AIM_DURATION = 0.5f;
+    private AimTargetController _aimTargetController;
+    private Transform _spine2;
+    private Quaternion _originalSpineRotation;
+    [SerializeField] private Vector3 aimRotationOffset = new Vector3(0, 50f, 0);
+
     void Start()
     {
-        // only init health for local player
         if (!photonView.IsMine) return;
 
         CurrentHP = MaxHP;
         EventBus.PlayerHealthChanged(CurrentHP, MaxHP);
+
+        _animator = GetComponentInChildren<Animator>();
+
+        _spine2 = _animator.GetBoneTransform(HumanBodyBones.Chest);
+
+        if (_spine2 != null)
+        {
+            _originalSpineRotation = _spine2.localRotation;
+        }
+
+        _animator = GetComponentInChildren<Animator>();
+        _tpc = GetComponent<ThirdPersonController>();
+        _aimTargetController = GetComponent<AimTargetController>();
+    }
+
+    void Update()
+    {
+        if (!photonView.IsMine) return;
+        if (_isDead) return;
+
+        // reset aim after shooting stops
+        if (_aimTimer > 0)
+        {
+            _aimTimer -= Time.deltaTime;
+            if (_aimTimer <= 0)
+            {
+                _animator?.SetBool("Aiming", false);
+                if (_tpc != null) _tpc.strafe = false;
+            }
+        }
+        if (_aimTimer <= 0)
+        {
+            _animator?.SetBool("Aiming", false);
+            if (_tpc != null) _tpc.strafe = false;
+            //_aimTargetController?.SetAiming(false);
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (!photonView.IsMine) return;
+        if (_spine2 == null) return;
+
+        if (_aimTimer > 0)
+        {
+            _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(aimRotationOffset);
+        }
+        else
+        {
+            _spine2.localRotation = _originalSpineRotation;
+        }
     }
 
     void OnEnable()
     {
-        // only local player takes zone damage
         if (photonView != null && !photonView.IsMine) return;
         EventBus.OnZoneDamageTick += TakeDamage;
     }
@@ -35,7 +95,6 @@ public class PlayerStateMachine : MonoBehaviourPun
 
     public void TakeDamage(int damage)
     {
-        // only process damage on owner
         if (!photonView.IsMine) return;
         if (_isDead) return;
 
@@ -50,6 +109,18 @@ public class PlayerStateMachine : MonoBehaviourPun
     {
         if (!photonView.IsMine) return;
         if (_isDead) return;
+
+        _animator?.SetBool("Aiming", true);
+        if (_tpc != null) _tpc.strafe = true;
+        _aimTargetController?.SetAiming(true);
+        _aimTimer = AIM_DURATION;
+
+        StartCoroutine(ShootNextFrame());
+    }
+
+    private System.Collections.IEnumerator ShootNextFrame()
+    {
+        yield return new WaitForSeconds(0.2f);
         CurrentWeapon?.TryShoot();
     }
 
@@ -59,8 +130,7 @@ public class PlayerStateMachine : MonoBehaviourPun
         _isDead = true;
 
         // disable movement
-        var tpc = GetComponent<StarterAssets.ThirdPersonController>();
-        if (tpc != null) tpc.enabled = false;
+        if (_tpc != null) _tpc.enabled = false;
 
         // play death anim locally
         PlayDeathAnim();
@@ -76,10 +146,10 @@ public class PlayerStateMachine : MonoBehaviourPun
     [PunRPC]
     private void RPC_PlayerDied(string playerId)
     {
-        // play death anim on all clients for this player
+        // play death anim on all clients
         PlayDeathAnim();
 
-        // only master client reports elimination to MatchManager
+        // only master client reports elimination
         if (PhotonNetwork.IsMasterClient)
         {
             int placement = MatchManager.Instance.PlayersAlive;
@@ -103,7 +173,6 @@ public class PlayerStateMachine : MonoBehaviourPun
         }
     }
 
-    // called by bot raycast hit on this player
     public void TakeDamageFromBot(int damage)
     {
         if (!photonView.IsMine) return;

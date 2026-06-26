@@ -162,7 +162,7 @@ namespace StarterAssets
 
         private void Move()
         {
-            float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+            float targetSpeed = _input.move.magnitude > 0.5f ? SprintSpeed : MoveSpeed;
 
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 

@@ -39,18 +39,26 @@ public class MainMenuManager : MonoBehaviour
     {
         Debug.Log("[MainMenu] Play clicked → joining room");
 
-        if (PhotonNetwork.InRoom)
+        if (PhotonNetwork.IsConnectedAndReady)
         {
-            // leave room first, then lobby will handle joining
-            PhotonNetwork.LeaveRoom();
-        }
-
-        if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
             PhotonNetworkManager.Instance?.JoinOrCreateRoom();
-
-        SceneManager.LoadScene("Lobby");
+            SceneManager.LoadScene("Lobby");
+        }
+        else
+        {
+            Debug.LogWarning("[MainMenu] Not connected yet — waiting");
+            StartCoroutine(WaitAndJoin());
+        }
     }
 
+    private System.Collections.IEnumerator WaitAndJoin()
+    {
+        while (!PhotonNetwork.IsConnectedAndReady)
+            yield return null;
+
+        PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+        SceneManager.LoadScene("Lobby");
+    }
     private void OnFriendsClicked()
     {
         Debug.Log("[MainMenu] Friends clicked");
