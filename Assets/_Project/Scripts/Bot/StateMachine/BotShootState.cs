@@ -14,6 +14,7 @@ public class BotShootState : IState
     {
         _sm.Agent.ResetPath();
         _sm.BotAnimator?.SetFloat(_sm.SpeedHash, 0f);
+        _sm.BotAnimator?.SetBool(_sm.AimingHash, true);
     }
 
     public void Tick(float dt)
@@ -52,7 +53,9 @@ public class BotShootState : IState
         }
     }
 
-    public void Exit() { }
+    public void Exit() {
+        _sm.BotAnimator?.SetBool(_sm.AimingHash, false);
+    }
 
     private void Shoot()
     {

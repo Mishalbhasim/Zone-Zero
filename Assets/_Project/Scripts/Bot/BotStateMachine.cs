@@ -1,5 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
+using Photon.Pun;
 
 public class BotStateMachine : MonoBehaviour
 {
@@ -19,30 +20,37 @@ public class BotStateMachine : MonoBehaviour
     public float ShootRange = 20f;
 
     [Header("Combat")]
-    public int Damage = 15;
-    public float FireRate = 1.5f;
+    public int Damage = 10;
+    public float FireRate = 0.8f;
 
     public Transform CurrentTarget { get; set; }
-
-
-    public NavMeshAgent Agent { get; private set; }
+    public UnityEngine.AI.NavMeshAgent Agent { get; private set; }
     public Animator BotAnimator { get; private set; }
-
     public int CurrentHP { get; set; } = 100;
     public int MaxHP = 100;
-
     public int SpeedHash { get; private set; }
     public int DeadHash { get; private set; }
+    public int AimingHash { get; private set; }
+
+    // spine rotation for aiming
+    private Transform _spine;
+    private Quaternion _originalSpineRotation;
 
     private IState _currentState;
 
     void Awake()
     {
-        Agent = GetComponent<NavMeshAgent>();
+        Agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         BotAnimator = GetComponentInChildren<Animator>();
 
         SpeedHash = Animator.StringToHash("Speed");
         DeadHash = Animator.StringToHash("Dead");
+        AimingHash = Animator.StringToHash("Aiming");
+
+        // cache spine bone
+        _spine = BotAnimator?.GetBoneTransform(HumanBodyBones.Chest);
+        if (_spine != null)
+            _originalSpineRotation = _spine.localRotation;
 
         PatrolState = new BotPatrolState(this);
         AlertState = new BotAlertState(this);
@@ -57,39 +65,47 @@ public class BotStateMachine : MonoBehaviour
 
     void Update()
     {
-        if (!IsActive) return;  // sleeping bots skip everything
-
+        if (!IsActive) return;
         _currentState?.Tick(Time.deltaTime);
 
-        // detection 
         if (_currentState != ShootState && _currentState != DeadState)
             DetectPlayer();
+    }
 
+    void LateUpdate()
+    {
+        if (_spine == null) return;
 
+        if (_currentState == ShootState && CurrentTarget != null)
+        {
+            // rotate spine toward target
+            Vector3 dir = (CurrentTarget.position - _spine.position).normalized;
+            _spine.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(0, 50, 0);
+        }
+        else
+        {
+            // reset spine
+            _spine.localRotation = _originalSpineRotation;
+        }
     }
 
     private void DetectPlayer()
     {
         var players = GameObject.FindGameObjectsWithTag("Player");
-        
 
         foreach (var player in players)
         {
             float dist = Vector3.Distance(transform.position, player.transform.position);
-           
             if (dist > DetectionRange) continue;
 
             Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, dirToPlayer);
-            
 
             if (angle <= DetectionFOV * 0.5f)
             {
-                // line of sight check
                 if (Physics.Raycast(transform.position + Vector3.up, dirToPlayer,
                                      out RaycastHit hit, DetectionRange))
                 {
-                    
                     if (hit.collider.GetComponentInParent<PlayerStateMachine>() != null)
                     {
                         CurrentTarget = player.transform;
@@ -100,18 +116,14 @@ public class BotStateMachine : MonoBehaviour
                 }
             }
         }
-
         CurrentTarget = null;
     }
 
-    //Takes Damage
     public void TakeDamage(int damage)
     {
         if (_currentState == DeadState) return;
-
         CurrentHP -= damage;
         CurrentHP = Mathf.Max(0, CurrentHP);
-
         if (CurrentHP <= 0)
             TransitionTo(DeadState);
     }
@@ -121,5 +133,10 @@ public class BotStateMachine : MonoBehaviour
         _currentState?.Exit();
         _currentState = newState;
         _currentState?.Enter();
+    }
+
+    public void DecrementBotsRemaining()
+    {
+        BotManager.Instance?.DecrementBotsRemaining();
     }
 }

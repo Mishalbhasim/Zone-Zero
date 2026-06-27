@@ -21,7 +21,7 @@ public class PlayerStateMachine : MonoBehaviourPun
     private AimTargetController _aimTargetController;
     private Transform _spine2;
     private Quaternion _originalSpineRotation;
-    [SerializeField] private Vector3 aimRotationOffset = new Vector3(0, 50f, 0);
+    [SerializeField] private Vector3 aimRotationOffset = new Vector3(0, 100f, 0);
 
     void Start()
     {
@@ -74,7 +74,7 @@ public class PlayerStateMachine : MonoBehaviourPun
 
         if (_aimTimer > 0)
         {
-            _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(aimRotationOffset);
+            _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(0, 50, 0);
         }
         else
         {

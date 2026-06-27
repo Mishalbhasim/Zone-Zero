@@ -437,7 +437,7 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 0
+      value: -959323140
       objectReference: {fileID: 0}
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
@@ -452,7 +452,7 @@ PrefabInstance:
     - target: {fileID: 8787252018466501726, guid: d52abfc05749c4eeb92e7e9896a576c8,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 0
+      value: 7.22e-43
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2403,9 +2403,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1122612c499b9574383b79720f705a1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _botPrefab: {fileID: 3742487928943417719, guid: a2bdc5a0f6cd8f5419e60f1c1fb7d9f4,
+  _botPrefab: {fileID: 3655686888481641307, guid: 76942b6655393be41a3ea0665f6751ed,
     type: 3}
-  _totalSlots: 3
+  _totalSlots: 30
   _activeRange: 60
   _maxActiveBots: 12
   _lodUpdateInterval: 1
