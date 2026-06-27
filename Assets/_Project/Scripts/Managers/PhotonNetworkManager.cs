@@ -24,6 +24,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void Connect()
     {
         if (PhotonNetwork.IsConnected) return;
+        PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
         Debug.Log("[PhotonNetworkManager] Connecting...");
     }

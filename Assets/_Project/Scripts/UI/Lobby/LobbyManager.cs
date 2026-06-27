@@ -6,7 +6,6 @@ using TMPro;
 using Photon.Pun;
 using Photon.Realtime;
 
-
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
     [Header("UI References")]
@@ -22,7 +21,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     [Header("Settings")]
     [SerializeField] private int _countdownSeconds = 20;
-    [SerializeField] private int _minPlayers = 1; 
+    [SerializeField] private int _minPlayers = 1;
     [SerializeField] private string _arenaScene = "Arena_01";
     [SerializeField] private string _mainMenuScene = "MainMenu";
 
@@ -32,18 +31,17 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        _cancelButton?.onClick.AddListener(OnCancelClicked);
+        _countingDown = false;
+        _matchStarting = false;
         _timer = _countdownSeconds;
+        _cancelButton?.onClick.AddListener(OnCancelClicked);
 
-   
-
-        if (PhotonNetwork.InRoom)
-            OnJoinedRoom();
-        else if (PhotonNetwork.IsConnectedAndReady)
-            PhotonNetworkManager.Instance?.JoinOrCreateRoom();
-        else
+        if (!PhotonNetwork.IsConnectedAndReady)
             UpdateUI();
+        else if (!PhotonNetwork.InRoom)
+            PhotonNetworkManager.Instance?.JoinOrCreateRoom();
     }
+
     void Update()
     {
         if (!_countingDown || _matchStarting) return;
@@ -51,11 +49,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         _timer -= Time.deltaTime;
         _timerText.text = Mathf.CeilToInt(_timer).ToString();
 
-        // change color when urgent
         if (_timer <= 5f)
-            _timerText.color = new Color(1f, 0.24f, 0.24f); // red
+            _timerText.color = new Color(1f, 0.24f, 0.24f);
         else
-            _timerText.color = new Color(0f, 0.898f, 1f); // cyan
+            _timerText.color = new Color(0f, 0.898f, 1f);
 
         if (_timer <= 0f)
             StartMatch();
@@ -68,7 +65,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         Debug.Log($"[LobbyManager] Joined room. Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
         UpdateUI();
         RefreshPlayerList();
-        TryStartCountdown();
+        Invoke(nameof(TryStartCountdown), 0.5f);
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
@@ -77,9 +74,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         UpdateUI();
         RefreshPlayerList();
 
-        // room full → start immediately
         if (PhotonNetwork.CurrentRoom.PlayerCount >= PhotonNetwork.CurrentRoom.MaxPlayers)
             StartMatch();
+
+        TryStartCountdown();
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
@@ -88,12 +86,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         RefreshPlayerList();
     }
 
-    // UI Updates
+    // UI
 
     private void UpdateUI()
     {
         if (!PhotonNetwork.InRoom) return;
-
         int current = PhotonNetwork.CurrentRoom.PlayerCount;
         int max = PhotonNetwork.CurrentRoom.MaxPlayers;
         _playerCountText.text = $"{current}/{max}";
@@ -103,11 +100,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         if (_playerListContent == null) return;
 
-        // clear existing
         for (int i = _playerListContent.childCount - 1; i >= 0; i--)
             Destroy(_playerListContent.GetChild(i).gameObject);
 
-        // add player entries
         foreach (var player in PhotonNetwork.CurrentRoom.Players.Values)
         {
             if (_playerListItemPrefab != null)
@@ -125,15 +120,29 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         }
     }
 
+    // Countdown
+
     private void TryStartCountdown()
     {
+        Debug.Log($"[LobbyManager] TryStartCountdown called. IsMaster: {PhotonNetwork.IsMasterClient}");
         if (_countingDown) return;
+        if (!PhotonNetwork.IsMasterClient) return;
         if (PhotonNetwork.CurrentRoom.PlayerCount >= _minPlayers)
         {
-            _countingDown = true;
-            _timerLabel.text = "MATCH STARTING IN";
-            Debug.Log("[LobbyManager] Countdown started");
+            Debug.Log("[LobbyManager] Master sending RPC_StartCountdown");
+            photonView.RPC("RPC_StartCountdown", RpcTarget.AllBuffered, PhotonNetwork.Time);
         }
+    }
+
+    [PunRPC]
+    private void RPC_StartCountdown(double startTimestamp)
+    {
+        Debug.Log("[LobbyManager] RPC_StartCountdown received");
+        if (_countingDown) return;
+        _countingDown = true;
+        double elapsed = PhotonNetwork.Time - startTimestamp;
+        _timer = _countdownSeconds - (float)elapsed;
+        _timerLabel.text = "MATCH STARTING IN";
     }
 
     // Match Start
@@ -148,10 +157,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         _timerLabel.text = "";
 
         if (PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.AutomaticallySyncScene = true; 
             PhotonNetwork.LoadLevel(_arenaScene);
-        }
     }
 
     // Buttons

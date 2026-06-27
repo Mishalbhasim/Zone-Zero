@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -317,8 +318,10 @@ namespace StarterAssets
 
         private void OnLand(AnimationEvent animationEvent)
         {
+            if (_controller == null) return;
             if (animationEvent.animatorClipInfo.weight > 0.5f)
             {
+
                 AudioSource.PlayClipAtPoint(LandingAudioClip,
                     transform.TransformPoint(_controller.center), FootstepAudioVolume);
             }
