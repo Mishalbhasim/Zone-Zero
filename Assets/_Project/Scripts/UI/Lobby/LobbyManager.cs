@@ -157,7 +157,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         _timerLabel.text = "";
 
         if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.CurrentRoom.IsOpen = false;    // ADD — no new joins
+            PhotonNetwork.CurrentRoom.IsVisible = false; // ADD — hide from room list
             PhotonNetwork.LoadLevel(_arenaScene);
+        }
     }
 
     // Buttons
