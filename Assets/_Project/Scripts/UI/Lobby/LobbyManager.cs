@@ -169,6 +169,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void OnCancelClicked()
     {
         PhotonNetwork.LeaveRoom();
-        SceneManager.LoadScene(_mainMenuScene);
+        
+    }
+
+    public override void OnLeftRoom()
+    {
+        SceneManager.LoadScene(_mainMenuScene); // load AFTER fully left
     }
 }
