@@ -15,6 +15,7 @@ public class BotPatrolState : IState
 
     public void Enter()
     {
+        _sm.Agent.speed = _sm.PatrolSpeed;
         PickNewDestination();
     }
 
@@ -23,8 +24,8 @@ public class BotPatrolState : IState
         if (!_sm.Agent.isOnNavMesh) return;
         // animator speed
         float speed = _sm.Agent.velocity.magnitude;
-        if (_sm.BotAnimator != null && _sm.BotAnimator.runtimeAnimatorController != null)
-            _sm.BotAnimator?.SetFloat(_sm.SpeedHash, speed);
+        _sm.BotAnimator?.SetFloat(_sm.SpeedHash, speed);
+        _sm.BotAnimator?.SetFloat(_sm.MotionSpeedHash, speed / _sm.PatrolSpeed);
 
         // reached destination
         if (!_sm.Agent.pathPending &&

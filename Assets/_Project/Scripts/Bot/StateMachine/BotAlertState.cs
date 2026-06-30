@@ -11,6 +11,7 @@ public class BotAlertState : IState
 
     public void Enter()
     {
+        _sm.Agent.speed = _sm.ChaseSpeed;
         if (_sm.CurrentTarget != null)
             _sm.Agent.SetDestination(_sm.CurrentTarget.position);
     }
@@ -19,6 +20,7 @@ public class BotAlertState : IState
     {
         float speed = _sm.Agent.velocity.magnitude;
         _sm.BotAnimator?.SetFloat(_sm.SpeedHash, speed);
+        _sm.BotAnimator?.SetFloat(_sm.MotionSpeedHash, speed / _sm.ChaseSpeed);
 
         if (_sm.CurrentTarget == null)
         {

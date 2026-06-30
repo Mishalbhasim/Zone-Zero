@@ -14,6 +14,7 @@ public class BotShootState : IState
     {
         _sm.Agent.ResetPath();
         _sm.BotAnimator?.SetFloat(_sm.SpeedHash, 0f);
+        _sm.BotAnimator?.SetFloat(_sm.MotionSpeedHash, 1f);
         _sm.BotAnimator?.SetBool(_sm.AimingHash, true);
     }
 
@@ -42,7 +43,7 @@ public class BotShootState : IState
             _sm.transform.rotation = Quaternion.Slerp(
                 _sm.transform.rotation,
                 Quaternion.LookRotation(dir),
-                10f * dt
+                25f * dt
             );
 
         // shoot
@@ -59,12 +60,17 @@ public class BotShootState : IState
 
     private void Shoot()
     {
-        // 65% accuracy
-        if (Random.value > 0.65f) return;
+        if (Random.value > 0.4f) return;
 
-        var playerSM = _sm.CurrentTarget.GetComponentInParent<PlayerStateMachine>();
-        if (playerSM != null)
-            playerSM.TakeDamage(_sm.Damage);
+        Vector3 gunPos = _sm.transform.position + Vector3.up * 1.5f;
+        Vector3 dir = (_sm.CurrentTarget.position + Vector3.up - gunPos).normalized;
+
+        if (Physics.Raycast(gunPos, dir, out RaycastHit hit, _sm.ShootRange))
+        {
+            var playerSM = hit.collider.GetComponentInParent<PlayerStateMachine>();
+            if (playerSM != null)
+                playerSM.TakeDamage(_sm.Damage);
+        }
 
         EventBus.WeaponFired("Bot");
     }

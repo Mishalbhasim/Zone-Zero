@@ -9,6 +9,10 @@ public class BotStateMachine : MonoBehaviour
     public BotShootState ShootState { get; private set; }
     public BotDeadState DeadState { get; private set; }
 
+    [Header("Movement")]
+    public float PatrolSpeed = 2f;   // walk threshold = 2
+    public float ChaseSpeed = 6f;
+
     [Header("LOD")]
     public bool IsActive = true;
     private float _lodCheckTimer;
@@ -31,6 +35,7 @@ public class BotStateMachine : MonoBehaviour
     public int SpeedHash { get; private set; }
     public int DeadHash { get; private set; }
     public int AimingHash { get; private set; }
+    public int MotionSpeedHash { get; private set; }
 
     // spine rotation for aiming
     private Transform _spine;
@@ -46,6 +51,8 @@ public class BotStateMachine : MonoBehaviour
         SpeedHash = Animator.StringToHash("Speed");
         DeadHash = Animator.StringToHash("Dead");
         AimingHash = Animator.StringToHash("Aiming");
+        MotionSpeedHash = Animator.StringToHash("MotionSpeed");
+
 
         // cache spine bone
         _spine = BotAnimator?.GetBoneTransform(HumanBodyBones.Chest);

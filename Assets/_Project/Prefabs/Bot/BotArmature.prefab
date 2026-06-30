@@ -1037,6 +1037,7 @@ GameObject:
   - component: {fileID: 3504827787292670856}
   - component: {fileID: 530347146868882218}
   - component: {fileID: 4431179958374250925}
+  - component: {fileID: 4044101907325482411}
   m_Layer: 8
   m_Name: BotArmature
   m_TagString: Bot
@@ -1112,6 +1113,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6762bc46093ae9149a00571e1177f84a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PatrolSpeed: 2
+  ChaseSpeed: 6
   IsActive: 1
   DetectionRange: 40
   DetectionFOV: 120
@@ -1141,6 +1144,18 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &4044101907325482411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3655686888481641307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48d14d8f735e47944b10e2b74de22052, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3663512398218825668
 GameObject:
   m_ObjectHideFlags: 0
