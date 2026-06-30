@@ -1,4 +1,5 @@
 using UnityEngine;
+using Photon.Pun;
 
 public class BotDeadState : IState
 {
@@ -11,19 +12,10 @@ public class BotDeadState : IState
 
     public void Enter()
     {
-        _sm.Agent.enabled = false;
-        _sm.BotAnimator?.SetBool(_sm.DeadHash, true);
-
-        
-        string botName = _sm.gameObject.name;
-
-        // report bot death to all clients
-        EliminationManager.Instance?.ReportBotDeath(botName);
-
-        _sm.gameObject.SetActive(false);
+        // RPC to all clients — handles death everywhere
+        _sm.photonView.RPC("RPC_BotDied", RpcTarget.All, PhotonNetwork.LocalPlayer.UserId);
     }
 
     public void Tick(float dt) { }
-
     public void Exit() { }
 }

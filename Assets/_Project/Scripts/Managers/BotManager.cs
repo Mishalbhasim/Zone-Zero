@@ -7,10 +7,8 @@ public class BotManager : SceneSingleton<BotManager>
     [Header("Bot Settings")]
     [SerializeField] private GameObject _botPrefab;
     [SerializeField] private int _totalSlots = 30;
-
     public int TotalBots { get; private set; }
     public int BotsRemaining { get; private set; }
-
     private List<GameObject> _bots = new List<GameObject>();
 
     [Header("LOD Settings")]
@@ -19,10 +17,9 @@ public class BotManager : SceneSingleton<BotManager>
     [SerializeField] private float _lodUpdateInterval = 1f;
     private float _lodTimer;
 
-  
-
     void Update()
     {
+        if (!PhotonNetwork.IsMasterClient) return; // only master runs LOD
         _lodTimer += Time.deltaTime;
         if (_lodTimer < _lodUpdateInterval) return;
         _lodTimer = 0f;
@@ -65,6 +62,8 @@ public class BotManager : SceneSingleton<BotManager>
 
     public void SpawnBots(int seed, int realPlayerCount)
     {
+        if (!PhotonNetwork.IsMasterClient) return; // only master spawns
+
         int botsToSpawn = Mathf.Max(0, _totalSlots - realPlayerCount);
         TotalBots = botsToSpawn;
         BotsRemaining = botsToSpawn;
@@ -73,26 +72,21 @@ public class BotManager : SceneSingleton<BotManager>
         for (int i = 0; i < botsToSpawn; i++)
         {
             Vector3 spawnPos = SpawnManager.Instance.GetSeededSpawnPoint(i, seed);
-            var bot = Instantiate(_botPrefab, spawnPos, Quaternion.identity);
+            // PhotonNetwork.Instantiate syncs bot to all clients
+            var bot = PhotonNetwork.Instantiate(_botPrefab.name, spawnPos, Quaternion.identity);
             bot.name = $"Bot_{i}";
             _bots.Add(bot);
         }
 
-        Debug.Log($"[BotManager] Spawned {botsToSpawn} bots (slots: {_totalSlots}, players: {realPlayerCount})");
+        Debug.Log($"[BotManager] Spawned {botsToSpawn} bots");
 
-        // initialize match with total players including bot and players
         int totalAlive = botsToSpawn + realPlayerCount;
-        if (!PhotonNetwork.IsConnected || PhotonNetwork.IsMasterClient) // should only run on master cl;ient
-            MatchManager.Instance?.StartCountdown(totalAlive);
+        MatchManager.Instance?.StartCountdown(totalAlive);
     }
-
-    
 
     public void DecrementBotsRemaining()
     {
         BotsRemaining--;
         Debug.Log($"[BotManager] Bot killed. Remaining: {BotsRemaining}");
     }
-
-    
 }

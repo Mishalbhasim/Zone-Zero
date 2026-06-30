@@ -10,13 +10,11 @@ public class BotStateMachine : MonoBehaviour
     public BotDeadState DeadState { get; private set; }
 
     [Header("Movement")]
-    public float PatrolSpeed = 2f;   // walk threshold = 2
+    public float PatrolSpeed = 2f;
     public float ChaseSpeed = 6f;
 
     [Header("LOD")]
     public bool IsActive = true;
-    private float _lodCheckTimer;
-    private const float LOD_CHECK_INTERVAL = 1f;
 
     [Header("Detection")]
     public float DetectionRange = 40f;
@@ -36,25 +34,23 @@ public class BotStateMachine : MonoBehaviour
     public int DeadHash { get; private set; }
     public int AimingHash { get; private set; }
     public int MotionSpeedHash { get; private set; }
+    public PhotonView photonView { get; private set; }
 
-    // spine rotation for aiming
     private Transform _spine;
     private Quaternion _originalSpineRotation;
-
     private IState _currentState;
 
     void Awake()
     {
         Agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         BotAnimator = GetComponentInChildren<Animator>();
+        photonView = GetComponent<PhotonView>();
 
         SpeedHash = Animator.StringToHash("Speed");
         DeadHash = Animator.StringToHash("Dead");
         AimingHash = Animator.StringToHash("Aiming");
         MotionSpeedHash = Animator.StringToHash("MotionSpeed");
 
-
-        // cache spine bone
         _spine = BotAnimator?.GetBoneTransform(HumanBodyBones.Chest);
         if (_spine != null)
             _originalSpineRotation = _spine.localRotation;
@@ -72,7 +68,9 @@ public class BotStateMachine : MonoBehaviour
 
     void Update()
     {
+        if (!PhotonNetwork.IsMasterClient) return; // only master runs AI
         if (!IsActive) return;
+
         _currentState?.Tick(Time.deltaTime);
 
         if (_currentState != ShootState && _currentState != DeadState)
@@ -85,15 +83,36 @@ public class BotStateMachine : MonoBehaviour
 
         if (_currentState == ShootState && CurrentTarget != null)
         {
-            // rotate spine toward target
             Vector3 dir = (CurrentTarget.position - _spine.position).normalized;
             _spine.rotation = Quaternion.LookRotation(dir) * Quaternion.Euler(0, 50, 0);
         }
         else
         {
-            // reset spine
             _spine.localRotation = _originalSpineRotation;
         }
+    }
+
+    [PunRPC]
+    public void RPC_BotDied(string killerUserId)
+    {
+        BotAnimator?.SetTrigger(DeadHash);
+        Agent.enabled = false;
+        BotManager.Instance?.DecrementBotsRemaining();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            EliminationManager.Instance?.ReportElimination(
+                killerUserId,
+                MatchManager.Instance.PlayersAlive
+            );
+            StartCoroutine(DestroyAfterDelay());
+        }
+    }
+
+    private System.Collections.IEnumerator DestroyAfterDelay()
+    {
+        yield return new WaitForSeconds(2f);
+        PhotonNetwork.Destroy(gameObject);
     }
 
     private void DetectPlayer()
@@ -128,6 +147,7 @@ public class BotStateMachine : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (!PhotonNetwork.IsMasterClient) return; // only master processes damage
         if (_currentState == DeadState) return;
         CurrentHP -= damage;
         CurrentHP = Mathf.Max(0, CurrentHP);
@@ -140,10 +160,5 @@ public class BotStateMachine : MonoBehaviour
         _currentState?.Exit();
         _currentState = newState;
         _currentState?.Enter();
-    }
-
-    public void DecrementBotsRemaining()
-    {
-        BotManager.Instance?.DecrementBotsRemaining();
     }
 }
