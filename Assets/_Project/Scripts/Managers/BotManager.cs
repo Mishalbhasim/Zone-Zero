@@ -62,26 +62,30 @@ public class BotManager : SceneSingleton<BotManager>
 
     public void SpawnBots(int seed, int realPlayerCount)
     {
-        if (!PhotonNetwork.IsMasterClient) return; // only master spawns
+        if (!PhotonNetwork.IsMasterClient) return;
 
         int botsToSpawn = Mathf.Max(0, _totalSlots - realPlayerCount);
         TotalBots = botsToSpawn;
         BotsRemaining = botsToSpawn;
         _bots.Clear();
 
-        for (int i = 0; i < botsToSpawn; i++)
-        {
-            Vector3 spawnPos = SpawnManager.Instance.GetSeededSpawnPoint(i, seed);
-            // PhotonNetwork.Instantiate syncs bot to all clients
-            var bot = PhotonNetwork.Instantiate(_botPrefab.name, spawnPos, Quaternion.identity);
-            bot.name = $"Bot_{i}";
-            _bots.Add(bot);
-        }
-
-        Debug.Log($"[BotManager] Spawned {botsToSpawn} bots");
+        StartCoroutine(SpawnBotsSequentially(seed, botsToSpawn));
 
         int totalAlive = botsToSpawn + realPlayerCount;
         MatchManager.Instance?.StartCountdown(totalAlive);
+    }
+
+    private System.Collections.IEnumerator SpawnBotsSequentially(int seed, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 spawnPos = SpawnManager.Instance.GetSeededSpawnPoint(i, seed);
+            var bot = PhotonNetwork.Instantiate(_botPrefab.name, spawnPos, Quaternion.identity);
+            bot.name = $"Bot_{i}";
+            _bots.Add(bot);
+            yield return new WaitForSeconds(0.1f); // small delay between each
+        }
+        Debug.Log($"[BotManager] Spawned {count} bots");
     }
 
     public void DecrementBotsRemaining()

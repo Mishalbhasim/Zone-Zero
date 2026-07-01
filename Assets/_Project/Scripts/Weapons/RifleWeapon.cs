@@ -38,7 +38,12 @@ public class RifleWeapon : WeaponBase
             Instantiate(_hitEffectPrefab, hit.point, Quaternion.LookRotation(hit.normal));
 
         var botSM = hit.collider.GetComponentInParent<BotStateMachine>();
-        if (botSM != null) { botSM.TakeDamage(Damage); return; }
+        if (botSM != null)
+        {
+            Debug.Log($"[Rifle] Hit bot: {botSM.gameObject.name}, HP: {botSM.CurrentHP}");
+            botSM.TakeDamage(Damage);
+            return;
+        }
 
         var playerSM = hit.collider.GetComponentInParent<PlayerStateMachine>();
         if (playerSM != null) playerSM.TakeDamage(Damage);

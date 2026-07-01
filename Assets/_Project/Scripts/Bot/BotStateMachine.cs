@@ -147,12 +147,26 @@ public class BotStateMachine : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        if (!PhotonNetwork.IsMasterClient) return; // only master processes damage
-        if (_currentState == DeadState) return;
-        CurrentHP -= damage;
-        CurrentHP = Mathf.Max(0, CurrentHP);
-        if (CurrentHP <= 0)
-            TransitionTo(DeadState);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            Debug.Log($"[Bot] Master TakeDamage called. HP before: {CurrentHP}, state: {_currentState?.GetType().Name}");
+            if (_currentState == DeadState) return;
+            CurrentHP -= damage;
+            CurrentHP = Mathf.Max(0, CurrentHP);
+            Debug.Log($"[Bot] HP after: {CurrentHP}");
+            if (CurrentHP <= 0)
+                TransitionTo(DeadState);
+        }
+        else
+        {
+            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage);
+        }
+    }
+
+    [PunRPC]
+    public void RPC_TakeDamage(int damage)
+    {
+        TakeDamage(damage);
     }
 
     public void TransitionTo(IState newState)
