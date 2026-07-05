@@ -13,6 +13,7 @@ public class ZoneManager : SceneSingleton<ZoneManager>
     [SerializeField] private float _waitTime = 30f;
     [SerializeField] private float _shrinkTime = 25f;
     [SerializeField] private int _damagePerSecond = 5;
+    public bool IsShrinking => _isShrinking;
 
     public Vector3 CurrentCenter { get; private set; }
     public float CurrentRadius { get; private set; }
@@ -23,6 +24,8 @@ public class ZoneManager : SceneSingleton<ZoneManager>
     private float _shrinkTimer;
     private float _shrinkDuration;
     private float _damageTimer;
+    public Vector3 NextCenter { get; private set; }
+    public float NextRadius { get; private set; }
 
     void Start()
     {
@@ -41,8 +44,10 @@ public class ZoneManager : SceneSingleton<ZoneManager>
             yield return new WaitForSeconds(_waitTime);
 
             // pick next zone
-            _nextRadius = _radiusSteps[phase];
-            _nextCenter = PickNextCenter(CurrentCenter, CurrentRadius, _nextRadius, phase);
+            NextRadius = _radiusSteps[phase];
+            NextCenter = PickNextCenter(CurrentCenter, CurrentRadius, NextRadius, phase);
+            _nextRadius = NextRadius;
+            _nextCenter = NextCenter;
 
             EventBus.ZonePhaseChanged(phase + 1);
             EventBus.ZoneShrinkStarted(CurrentCenter, CurrentRadius,
