@@ -76,7 +76,7 @@ public class PhotonPlayerSetup : MonoBehaviourPun
         if (!photonView.IsMine) return;
 
 #if UNITY_EDITOR || UNITY_STANDALONE
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.isPressed)
             _psm?.TryShoot();
 
         if (Keyboard.current.escapeKey.wasPressedThisFrame)

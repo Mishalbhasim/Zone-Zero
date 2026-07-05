@@ -8,6 +8,7 @@ public class HUDController : MonoBehaviour
 {
     [Header("Health")]
     [SerializeField] private Slider _healthBar;
+    [SerializeField] private TextMeshProUGUI _healthText;
 
     [Header("Death Screen")]
     [SerializeField] private GameObject _deathScreen;
@@ -22,6 +23,9 @@ public class HUDController : MonoBehaviour
 
     [Header("Ammo")]
     [SerializeField] private TextMeshProUGUI _ammoText;
+
+    [Header("Players Alive")]
+    [SerializeField] private TextMeshProUGUI _playersAliveText;
 
     private int _myKills = 0;
     private int _myPlacement = 0;
@@ -47,6 +51,7 @@ public class HUDController : MonoBehaviour
         EventBus.OnPlayerWon += ShowVictoryScreen;
         EventBus.OnBotKilled += OnBotKilled;
         EventBus.OnPlayerEliminated += OnPlayerEliminated;
+        EventBus.OnPlayersAliveChanged += UpdatePlayersAlive;
     }
 
     void OnDisable()
@@ -59,6 +64,7 @@ public class HUDController : MonoBehaviour
         EventBus.OnPlayerWon -= ShowVictoryScreen;
         EventBus.OnBotKilled -= OnBotKilled;
         EventBus.OnPlayerEliminated -= OnPlayerEliminated;
+        EventBus.OnPlayersAliveChanged -= UpdatePlayersAlive;
     }
 
     //Health
@@ -67,6 +73,22 @@ public class HUDController : MonoBehaviour
     {
         if (_healthBar == null) return;
         _healthBar.value = current;
+
+        // get fill image
+        var fill = _healthBar.fillRect?.GetComponent<Image>();
+        if (fill == null) return;
+
+        float percent = (float)current / max;
+        if (percent > 0.6f)
+            fill.color = new Color(0f, 1f, 0.53f);      // green
+        else if (percent > 0.3f)
+            fill.color = new Color(1f, 0.85f, 0f);       // yellow
+        else
+            fill.color = new Color(1f, 0.24f, 0.24f);    // red
+
+        // after fill color change — add:
+        if (_healthText != null)
+            _healthText.text = $"{current}";
     }
     //Ammo
 
@@ -159,5 +181,12 @@ public class HUDController : MonoBehaviour
             PhotonNetwork.LeaveRoom();
 
         SceneManager.LoadScene("MainMenu");
+    }
+
+    //update alive players
+    private void UpdatePlayersAlive(int count)
+    {
+        if (_playersAliveText != null)
+            _playersAliveText.text = $"{count} ALIVE";
     }
 }

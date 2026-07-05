@@ -22,7 +22,7 @@ public class RifleWeapon : WeaponBase
         _gunVFX?.FireWeapon();
 
         Transform cam = Camera.main.transform;
-        Ray ray = new Ray(_firePoint.position, cam.forward);
+        Ray ray = new Ray(cam.position, cam.forward);
         int layerMask = ~LayerMask.GetMask("Player");
 
         Debug.DrawRay(_firePoint.position, cam.forward * Range, Color.yellow, 0.3f);

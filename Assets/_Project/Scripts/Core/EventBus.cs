@@ -61,6 +61,10 @@ public static class EventBus
         => OnBotKilled?.Invoke(botId);
 
 
+    public static event Action<int> OnPlayersAliveChanged;
+    public static void PlayersAliveChanged(int count) => OnPlayersAliveChanged?.Invoke(count);
+
+
     //Zone
     public static event Action<Vector3, float, Vector3, float, float> OnZoneShrinkStarted;
     public static void ZoneShrinkStarted(Vector3 curCenter, float curRadius,

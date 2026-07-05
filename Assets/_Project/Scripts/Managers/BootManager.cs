@@ -21,7 +21,9 @@ public class BootManager : MonoBehaviour
         {
             string savedName = PlayerPrefs.GetString(USERNAME_KEY);
             GameManager.Instance.LocalPlayerName = savedName;
+            Photon.Pun.PhotonNetwork.NickName = savedName;
             GameManager.Instance.LocalPlayerId = savedName;
+            
 
             Debug.Log($"[BootManager] Username found: {savedName} → loading MainMenu");
             GameManager.Instance.TransitionTo(GameManager.GameState.MainMenu);
@@ -40,6 +42,7 @@ public class BootManager : MonoBehaviour
         PlayerPrefs.SetString(USERNAME_KEY, username);
         PlayerPrefs.Save();
         GameManager.Instance.LocalPlayerName = username;
+        Photon.Pun.PhotonNetwork.NickName = username;
         GameManager.Instance.LocalPlayerId = username;
         Debug.Log($"[BootManager] Username saved: {username}");
     }

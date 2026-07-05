@@ -9,9 +9,9 @@ public class MatchManager : SceneSingleton<MatchManager>
 
     void Start()
     {
-        
-        
-        
+
+        EventBus.PlayersAliveChanged(PlayersAlive);
+
     }
 
     public void StartCountdown(int totalPlayers)
@@ -46,6 +46,7 @@ public class MatchManager : SceneSingleton<MatchManager>
     public void OnEliminationReported(string eliminatedId, int placement)
     {
         PlayersAlive--;
+        EventBus.PlayersAliveChanged(PlayersAlive);
         PlayersAlive = Mathf.Max(0, PlayersAlive);
 
         Debug.Log($"[MatchManager] Elimination reported: {eliminatedId} | Remaining: {PlayersAlive}");
