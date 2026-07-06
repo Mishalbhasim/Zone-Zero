@@ -12,8 +12,11 @@ public class BotAlertState : IState
     public void Enter()
     {
         _sm.Agent.speed = _sm.ChaseSpeed;
-        if (_sm.CurrentTarget != null)
-            _sm.Agent.SetDestination(_sm.CurrentTarget.position);
+        if (_sm.Agent.isActiveAndEnabled && _sm.Agent.isOnNavMesh)
+        {
+            if (_sm.CurrentTarget != null)
+                _sm.Agent.SetDestination(_sm.CurrentTarget.position);
+        }
     }
 
     public void Tick(float dt)
@@ -39,7 +42,8 @@ public class BotAlertState : IState
         }
 
         // chase target
-        _sm.Agent.SetDestination(_sm.CurrentTarget.position);
+        if (_sm.Agent.isActiveAndEnabled && _sm.Agent.isOnNavMesh)
+            _sm.Agent.SetDestination(_sm.CurrentTarget.position);
     }
 
     public void Exit() { }

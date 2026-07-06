@@ -1123,6 +1123,7 @@ MonoBehaviour:
   DetectionRange: 40
   DetectionFOV: 120
   ShootRange: 15
+  ProximityRange: 8
   Damage: 10
   FireRate: 1.5
   MaxHP: 100

@@ -10,6 +10,12 @@ public class HUDController : MonoBehaviour
     [SerializeField] private Slider _healthBar;
     [SerializeField] private TextMeshProUGUI _healthText;
 
+    [Header("Zone Timer")]
+    [SerializeField] private TextMeshProUGUI _zoneTimerText;
+    private float _zoneTimer;
+    private bool _zoneTimerActive;
+
+
     [Header("Death Screen")]
     [SerializeField] private GameObject _deathScreen;
     [SerializeField] private TextMeshProUGUI _statsText;
@@ -26,6 +32,11 @@ public class HUDController : MonoBehaviour
 
     [Header("Players Alive")]
     [SerializeField] private TextMeshProUGUI _playersAliveText;
+
+    [Header("Zone Warning")]
+    [SerializeField] private TextMeshProUGUI _zoneWarningText;
+    private float _zoneWarningTimer;
+    private bool _zoneWarningActive;
 
     private int _myKills = 0;
     private int _myPlacement = 0;
@@ -52,6 +63,8 @@ public class HUDController : MonoBehaviour
         EventBus.OnBotKilled += OnBotKilled;
         EventBus.OnPlayerEliminated += OnPlayerEliminated;
         EventBus.OnPlayersAliveChanged += UpdatePlayersAlive;
+        EventBus.OnZoneShrinkStarted += OnZoneShrinkStarted;
+        EventBus.OnZoneWarning += OnZoneWarning;
     }
 
     void OnDisable()
@@ -65,6 +78,15 @@ public class HUDController : MonoBehaviour
         EventBus.OnBotKilled -= OnBotKilled;
         EventBus.OnPlayerEliminated -= OnPlayerEliminated;
         EventBus.OnPlayersAliveChanged -= UpdatePlayersAlive;
+        EventBus.OnZoneShrinkStarted -= OnZoneShrinkStarted;
+        EventBus.OnZoneWarning -= OnZoneWarning;
+    }
+
+
+    void Update()
+    {
+        UpdateZoneTimer();
+        UpdateZoneWarning();
     }
 
     //Health
@@ -124,7 +146,7 @@ public class HUDController : MonoBehaviour
             return;
         }
 
-        
+
         _deathScreen.SetActive(true);
 
         int score = ScoreManager.Instance?.GetScore(
@@ -188,5 +210,64 @@ public class HUDController : MonoBehaviour
     {
         if (_playersAliveText != null)
             _playersAliveText.text = $"{count} ALIVE";
+    }
+
+
+    private void OnZoneShrinkStarted(Vector3 currentCenter, float currentRadius,
+                                  Vector3 nextCenter, float nextRadius, float shrinkTime)
+    {
+        _zoneTimer = shrinkTime;
+        _zoneTimerActive = true;
+        _zoneTimerText?.gameObject.SetActive(true);
+
+    }
+
+    private void UpdateZoneTimer()
+    {
+        if (!_zoneTimerActive) return;
+        _zoneTimer -= Time.deltaTime;
+
+        if (_zoneTimerText != null)
+        {
+            _zoneTimerText.text = $"ZONE {Mathf.CeilToInt(_zoneTimer)}s";
+            _zoneTimerText.color = _zoneTimer <= 10f
+                ? new Color(1f, 0.24f, 0.24f)   // red
+                : new Color(0f, 0.898f, 1f);     // cyan
+        }
+
+        if (_zoneTimer <= 0f)
+        {
+            _zoneTimerActive = false;
+            _zoneTimerText?.gameObject.SetActive(false);
+        }
+    }
+
+
+    private void OnZoneWarning(float waitTime)
+    {
+        _zoneWarningTimer = waitTime;
+        _zoneWarningActive = true;
+        _zoneWarningText?.gameObject.SetActive(true);
+    }
+
+
+    private void UpdateZoneWarning()
+    {
+        if (!_zoneWarningActive) return;
+        _zoneWarningTimer -= Time.deltaTime;
+
+        if (_zoneWarningText != null)
+        {
+            _zoneWarningText.text = $"ZONE CLOSING IN {Mathf.CeilToInt(_zoneWarningTimer)}s";
+            _zoneWarningText.color = _zoneWarningTimer <= 10f
+                ? new Color(1f, 0.24f, 0.24f)
+                : new Color(1f, 0.85f, 0f); // yellow warning
+        }
+
+        if (_zoneWarningTimer <= 0f)
+        {
+            _zoneWarningActive = false;
+            _zoneWarningText?.gameObject.SetActive(false);
+        }
     }
 }

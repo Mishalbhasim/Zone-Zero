@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class MinimapController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Camera _minimapCamera;
+
     [SerializeField] private RectTransform _playerArrow;
     [SerializeField] private RectTransform _minimapRect;
     private Transform _playerTransform;
@@ -12,20 +12,23 @@ public class MinimapController : MonoBehaviour
 
     [Header("Zone Rings - Mini")]
     [SerializeField] private RectTransform _currentZoneRing;
+
     [SerializeField] private RectTransform _nextZoneRing;
     [SerializeField] private float _minimapCameraSize = 100f;
 
     [Header("Full Map UI")]
     [SerializeField] private RectTransform _fullMapRect;
+
     [SerializeField] private RectTransform _playerArrowFull;
     [SerializeField] private RectTransform _currentZoneRingFull;
     [SerializeField] private RectTransform _nextZoneRingFull;
 
     // terrain goes from -400 to +400, size = 800
     private const float TERRAIN_HALF = 400f;
+
     private const float TERRAIN_SIZE = 800f;
 
-    void Update()
+    private void Update()
     {
         if (_playerTransform == null)
         {

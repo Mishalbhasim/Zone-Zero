@@ -64,6 +64,9 @@ public static class EventBus
     public static event Action<int> OnPlayersAliveChanged;
     public static void PlayersAliveChanged(int count) => OnPlayersAliveChanged?.Invoke(count);
 
+    public static event Action<float> OnZoneWarning;
+    public static void ZoneWarning(float waitTime) => OnZoneWarning?.Invoke(waitTime);
+
 
     //Zone
     public static event Action<Vector3, float, Vector3, float, float> OnZoneShrinkStarted;

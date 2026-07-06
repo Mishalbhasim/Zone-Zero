@@ -20,6 +20,7 @@ public class BotStateMachine : MonoBehaviour
     public float DetectionRange = 40f;
     public float DetectionFOV = 120f;
     public float ShootRange = 20f;
+    public float ProximityRange = 8f; // close range detection
 
     [Header("Combat")]
     public int Damage = 10;
@@ -68,7 +69,7 @@ public class BotStateMachine : MonoBehaviour
 
     void Update()
     {
-        if (!PhotonNetwork.IsMasterClient) return; // only master runs AI
+        if (!PhotonNetwork.IsMasterClient) return;
         if (!IsActive) return;
 
         _currentState?.Tick(Time.deltaTime);
@@ -124,6 +125,16 @@ public class BotStateMachine : MonoBehaviour
             float dist = Vector3.Distance(transform.position, player.transform.position);
             if (dist > DetectionRange) continue;
 
+            // proximity detection — no FOV needed when very close
+            if (dist < ProximityRange)
+            {
+                CurrentTarget = player.transform;
+                if (_currentState == PatrolState)
+                    TransitionTo(AlertState);
+                return;
+            }
+
+            // FOV detection
             Vector3 dirToPlayer = (player.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, dirToPlayer);
 
@@ -142,31 +153,52 @@ public class BotStateMachine : MonoBehaviour
                 }
             }
         }
-        CurrentTarget = null;
+        // only clear target if not already chasing
+        if (_currentState == PatrolState)
+            CurrentTarget = null;
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(int damage, Transform attacker = null)
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            Debug.Log($"[Bot] Master TakeDamage called. HP before: {CurrentHP}, state: {_currentState?.GetType().Name}");
+            // enable bot if sleeping
+            if (!IsActive)
+            {
+                IsActive = true;
+                Agent.enabled = true;
+            }
+
             if (_currentState == DeadState) return;
             CurrentHP -= damage;
             CurrentHP = Mathf.Max(0, CurrentHP);
-            Debug.Log($"[Bot] HP after: {CurrentHP}");
+
+            // alert bot to attacker
+            if (attacker != null && _currentState != ShootState)
+            {
+                CurrentTarget = attacker;
+                TransitionTo(AlertState);
+            }
+
             if (CurrentHP <= 0)
                 TransitionTo(DeadState);
         }
         else
         {
-            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage);
+            var myView = PhotonView.Find(PhotonNetwork.LocalPlayer.ActorNumber);
+            int viewID = myView != null ? myView.ViewID : -1;
+            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage, viewID);
         }
     }
 
     [PunRPC]
-    public void RPC_TakeDamage(int damage)
+    public void RPC_TakeDamage(int damage, int attackerViewID)
     {
-        TakeDamage(damage);
+        Transform attacker = null;
+        var attackerView = PhotonView.Find(attackerViewID);
+        if (attackerView != null)
+            attacker = attackerView.transform;
+        TakeDamage(damage, attacker);
     }
 
     public void TransitionTo(IState newState)

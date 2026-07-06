@@ -1,5 +1,5 @@
-using UnityEngine;
 using BigRookGames.Weapons;
+using UnityEngine;
 
 public class RifleWeapon : WeaponBase
 {
@@ -40,8 +40,7 @@ public class RifleWeapon : WeaponBase
         var botSM = hit.collider.GetComponentInParent<BotStateMachine>();
         if (botSM != null)
         {
-            Debug.Log($"[Rifle] Hit bot: {botSM.gameObject.name}, HP: {botSM.CurrentHP}");
-            botSM.TakeDamage(Damage);
+            botSM.TakeDamage(Damage, transform.root);
             return;
         }
 
