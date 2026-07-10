@@ -1,4 +1,5 @@
 using BigRookGames.Weapons;
+using Photon.Pun;
 using UnityEngine;
 
 public class RifleWeapon : WeaponBase
@@ -23,10 +24,11 @@ public class RifleWeapon : WeaponBase
 
         Transform cam = Camera.main.transform;
         Ray ray = new Ray(cam.position, cam.forward);
-        int layerMask = ~LayerMask.GetMask("Player");
+        int layerMask = LayerMask.GetMask("Player", "Bot", "Default"); // all layers it should hit
 
         Debug.DrawRay(_firePoint.position, cam.forward * Range, Color.yellow, 0.3f);
         EventBus.WeaponFired("Rifle");
+
 
         if (!Physics.Raycast(ray, out RaycastHit hit, Range, layerMask)) return;
 
@@ -45,6 +47,7 @@ public class RifleWeapon : WeaponBase
         }
 
         var playerSM = hit.collider.GetComponentInParent<PlayerStateMachine>();
-        if (playerSM != null) playerSM.TakeDamage(Damage);
+        if (playerSM != null)
+            playerSM.RequestDamage(Damage, PhotonNetwork.LocalPlayer.UserId);
     }
 }

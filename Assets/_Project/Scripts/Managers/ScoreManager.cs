@@ -21,13 +21,18 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 
     private int _eliminationOrder = 30;
 
+  
+
     void Start()
     {
         EventBus.OnBotKilled += OnBotKilled;
-        EventBus.OnPlayerDied += OnPlayerDied;
         EventBus.OnMatchStarted += OnMatchStarted;
     }
 
+    private void OnPlayerKilledHandler(string killerId, string victimId)
+    {
+        PlayerKilledPlayer(killerId, victimId);
+    }
     public void RegisterPlayer(string playerId, string playerName)
     {
         if (_scores.ContainsKey(playerId)) return;
@@ -43,6 +48,7 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 
     public void PlayerKilledBot(string playerId)
     {
+        Debug.Log($"[ScoreManager] PlayerKilledBot: {playerId} | Registered: {_scores.ContainsKey(playerId)}");
         if (!_scores.ContainsKey(playerId)) return;
         _scores[playerId].Kills++;
         AddScore(playerId, KILL_BOT);
@@ -100,14 +106,9 @@ public class ScoreManager : SceneSingleton<ScoreManager>
     private void OnBotKilled(int botId)
     {
         string playerId = GameManager.Instance?.LocalPlayerId;
+        Debug.Log($"[ScoreManager] Bot killed by: {playerId} | Registered: {_scores.ContainsKey(playerId)}");
         if (string.IsNullOrEmpty(playerId)) return;
         PlayerKilledBot(playerId);
-    }
-
-    private void OnPlayerDied()
-    {
-        if (GameManager.Instance != null)
-            PlayerKilledPlayer("", GameManager.Instance.LocalPlayerId);
     }
 
     private void OnMatchStarted(int total) => Reset();
@@ -115,7 +116,11 @@ public class ScoreManager : SceneSingleton<ScoreManager>
     protected override void OnDestroy()
     {
         EventBus.OnBotKilled -= OnBotKilled;
-        EventBus.OnPlayerDied -= OnPlayerDied;
         EventBus.OnMatchStarted -= OnMatchStarted;
+
+
     }
+
+    public int GetKills(string playerId)
+    => _scores.ContainsKey(playerId) ? _scores[playerId].Kills : 0;
 }

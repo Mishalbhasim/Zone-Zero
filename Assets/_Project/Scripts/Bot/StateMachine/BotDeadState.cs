@@ -12,8 +12,8 @@ public class BotDeadState : IState
 
     public void Enter()
     {
-        // RPC to all clients — handles death everywhere
-        _sm.photonView.RPC("RPC_BotDied", RpcTarget.All, PhotonNetwork.LocalPlayer.UserId);
+        string killerId = _sm._lastKillerUserId; // empty if zone killed
+        _sm.photonView.RPC("RPC_BotDied", RpcTarget.All, killerId);
     }
 
     public void Tick(float dt) { }

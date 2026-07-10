@@ -40,6 +40,7 @@ public class BotStateMachine : MonoBehaviour
     private Transform _spine;
     private Quaternion _originalSpineRotation;
     private IState _currentState;
+    internal string _lastKillerUserId = "";
 
     void Awake()
     {
@@ -60,6 +61,11 @@ public class BotStateMachine : MonoBehaviour
         AlertState = new BotAlertState(this);
         ShootState = new BotShootState(this);
         DeadState = new BotDeadState(this);
+
+
+        // disable ragdoll on start
+        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+            rb.isKinematic = true;
     }
 
     void Start()
@@ -96,9 +102,17 @@ public class BotStateMachine : MonoBehaviour
     [PunRPC]
     public void RPC_BotDied(string killerUserId)
     {
-        BotAnimator?.SetTrigger(DeadHash);
+        // ragdoll
+        BotAnimator.enabled = false;
         Agent.enabled = false;
+        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+            rb.isKinematic = false;
+
         BotManager.Instance?.DecrementBotsRemaining();
+
+        // only fire kill event for the actual killer
+        if (!string.IsNullOrEmpty(killerUserId) && killerUserId == PhotonNetwork.LocalPlayer.UserId)
+            EventBus.BotKilled(0);
 
         if (PhotonNetwork.IsMasterClient)
         {
@@ -162,32 +176,29 @@ public class BotStateMachine : MonoBehaviour
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            // enable bot if sleeping
-            if (!IsActive)
-            {
-                IsActive = true;
-                Agent.enabled = true;
-            }
-
+            if (!IsActive) { IsActive = true; Agent.enabled = true; }
             if (_currentState == DeadState) return;
             CurrentHP -= damage;
             CurrentHP = Mathf.Max(0, CurrentHP);
 
-            // alert bot to attacker
-            if (attacker != null && _currentState != ShootState)
+            if (attacker != null)
             {
-                CurrentTarget = attacker;
-                TransitionTo(AlertState);
+                _lastKillerUserId = PhotonNetwork.LocalPlayer.UserId; // player killed it
+                if (_currentState != ShootState)
+                {
+                    CurrentTarget = attacker;
+                    TransitionTo(AlertState);
+                }
             }
+            // if attacker is null = zone damage, don't set killer
 
             if (CurrentHP <= 0)
                 TransitionTo(DeadState);
         }
         else
         {
-            var myView = PhotonView.Find(PhotonNetwork.LocalPlayer.ActorNumber);
-            int viewID = myView != null ? myView.ViewID : -1;
-            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage, viewID);
+            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage,
+                PhotonView.Find(PhotonNetwork.LocalPlayer.ActorNumber)?.ViewID ?? -1);
         }
     }
 

@@ -84,8 +84,13 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     {
         SpawnLocalPlayer();
         BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
-    }
 
+        // register AFTER match started event fires
+        string id = GameManager.Instance?.LocalPlayerId;
+        string name = GameManager.Instance?.LocalPlayerName;
+        ScoreManager.Instance?.RegisterPlayer(id, name);
+        Debug.Log($"[ScoreManager] Registered: {id} | Name: {name}");
+    }
 
     private void SpawnLocalPlayer()
     {
@@ -95,6 +100,8 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
             spawnPos,
             Quaternion.identity
         );
+
+        
     }
     public void OnJoinRoomFailed(short code, string msg)
         => Debug.LogError($"[PhotonNetworkManager] Join failed: {msg}");

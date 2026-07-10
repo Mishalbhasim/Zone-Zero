@@ -40,6 +40,12 @@ public class HUDController : MonoBehaviour
 
     private int _myKills = 0;
     private int _myPlacement = 0;
+    private int _totalPlayers = 30;
+
+    [Header("Gameplay HUD")]
+    [SerializeField] private GameObject _gameplayHUD;
+    [SerializeField] private GameObject _joystickCanvas;
+    private bool _isDead = false;
 
     void Start()
     {
@@ -56,8 +62,6 @@ public class HUDController : MonoBehaviour
     {
         EventBus.OnPlayerHealthChanged += UpdateHealth;
         EventBus.OnPlayerDied += ShowDeathScreen;
-        EventBus.OnPlayerRespawned += HideDeathScreen;
-        EventBus.OnRespawnTimerTick += UpdateRespawnTimer;
         EventBus.OnAmmoChanged += UpdateAmmo;
         EventBus.OnPlayerWon += ShowVictoryScreen;
         EventBus.OnBotKilled += OnBotKilled;
@@ -65,14 +69,13 @@ public class HUDController : MonoBehaviour
         EventBus.OnPlayersAliveChanged += UpdatePlayersAlive;
         EventBus.OnZoneShrinkStarted += OnZoneShrinkStarted;
         EventBus.OnZoneWarning += OnZoneWarning;
+        EventBus.OnMatchStarted += OnMatchStarted;
     }
 
     void OnDisable()
     {
         EventBus.OnPlayerHealthChanged -= UpdateHealth;
         EventBus.OnPlayerDied -= ShowDeathScreen;
-        EventBus.OnPlayerRespawned -= HideDeathScreen;
-        EventBus.OnRespawnTimerTick -= UpdateRespawnTimer;
         EventBus.OnAmmoChanged -= UpdateAmmo;
         EventBus.OnPlayerWon -= ShowVictoryScreen;
         EventBus.OnBotKilled -= OnBotKilled;
@@ -80,6 +83,7 @@ public class HUDController : MonoBehaviour
         EventBus.OnPlayersAliveChanged -= UpdatePlayersAlive;
         EventBus.OnZoneShrinkStarted -= OnZoneShrinkStarted;
         EventBus.OnZoneWarning -= OnZoneWarning;
+        EventBus.OnMatchStarted -= OnMatchStarted;
     }
 
 
@@ -120,17 +124,22 @@ public class HUDController : MonoBehaviour
             _ammoText.text = $"{current}/{max}";
     }
 
+    private void OnMatchStarted(int totalPlayers)
+    {
+        _totalPlayers = totalPlayers;
+    }
+
     //Kill tracking
 
     private void OnBotKilled(int botId)
     {
         _myKills++;
+        Debug.Log($"[HUD] Kill registered. Total: {_myKills}");
     }
 
     private void OnPlayerEliminated(string playerId, int placement)
     {
-        // track our own placement
-        if (playerId == GameManager.Instance?.LocalPlayerId)
+        if (playerId == PhotonNetwork.LocalPlayer.UserId)
             _myPlacement = placement;
     }
 
@@ -138,22 +147,27 @@ public class HUDController : MonoBehaviour
 
     private void ShowDeathScreen()
     {
+        _gameplayHUD?.SetActive(false);
+        _joystickCanvas?.SetActive(false);
 
-        Debug.Log("[HUD] ShowDeathScreen called");
-        if (_deathScreen == null)
-        {
-            Debug.LogError("[HUD] _deathScreen is null!");
-            return;
-        }
-
-
+        if (_deathScreen == null) return;
         _deathScreen.SetActive(true);
 
-        int score = ScoreManager.Instance?.GetScore(
-            GameManager.Instance?.LocalPlayerId ?? "") ?? 0;
+        string localId = GameManager.Instance?.LocalPlayerId ?? "";
+        int kills = ScoreManager.Instance?.GetKills(localId) ?? 0;
+        int score = ScoreManager.Instance?.GetScore(localId) ?? 0;
 
         if (_statsText != null)
-            _statsText.text = $"#{_myPlacement} out of 30  |  Kills: {_myKills}  |  Score: {score}";
+            _statsText.text = $"#{_myPlacement} out of {_totalPlayers}  |  Kills: {kills}  |  Score: {score}";
+
+        _isDead = true;
+    }
+
+    private string GetPlayerName(string userId)
+    {
+        foreach (var p in PhotonNetwork.PlayerList)
+            if (p.UserId == userId) return p.NickName;
+        return userId; // fallback
     }
 
     private void HideDeathScreen(Vector3 pos)
@@ -161,15 +175,13 @@ public class HUDController : MonoBehaviour
         _deathScreen?.SetActive(false);
     }
 
-    private void UpdateRespawnTimer(int seconds)
-    {
-        // kept for compatibility — not used in BR mode
-    }
+
 
     //Victory Screen
 
     private void ShowVictoryScreen(string winnerId)
     {
+        if (_isDead) return;
         if (_victoryScreen == null) return;
         _victoryScreen.SetActive(true);
 
@@ -177,17 +189,15 @@ public class HUDController : MonoBehaviour
         bool isLocalWinner = winnerId == localId;
 
         if (_winnerNameText != null)
-        {
             _winnerNameText.text = isLocalWinner
                 ? GameManager.Instance?.LocalPlayerName ?? "You"
-                : winnerId;
-        }
+                : GetPlayerName(winnerId);
 
+        int kills = ScoreManager.Instance?.GetKills(winnerId) ?? 0;
         int score = ScoreManager.Instance?.GetScore(winnerId) ?? 0;
-        var winner = ScoreManager.Instance?.GetWinner();
 
         if (_winnerStatsText != null)
-            _winnerStatsText.text = $"Kills: {winner?.Kills ?? 0}  |  Score: {score}";
+            _winnerStatsText.text = $"Kills: {kills}  |  Score: {score}";
     }
 
     //Return to Lobby

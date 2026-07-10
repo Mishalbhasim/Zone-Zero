@@ -19,6 +19,10 @@ public class PhotonPlayerSetup : MonoBehaviourPun
             if (tpc != null) tpc.enabled = false;
             var psm = GetComponent<PlayerStateMachine>();
             if (psm != null) psm.enabled = false;
+
+            // FIX: lock ragdoll bones kinematic for remote clone too
+            foreach (var rb in GetComponentsInChildren<Rigidbody>())
+                rb.isKinematic = true;
             return;
         }
 

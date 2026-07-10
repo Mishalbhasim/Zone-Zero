@@ -23,9 +23,6 @@ public static class EventBus
     public static void PlayerDied()
         => OnPlayerDied?.Invoke();
 
-    public static event Action<Vector3> OnPlayerRespawned;
-    public static void PlayerRespawned(Vector3 position)
-        => OnPlayerRespawned?.Invoke(position);
 
     //Death
     public static event Action<int> OnRespawnTimerTick;
@@ -81,4 +78,6 @@ public static class EventBus
     public static event Action<int> OnZonePhaseChanged;
     public static void ZonePhaseChanged(int phase)
         => OnZonePhaseChanged?.Invoke(phase);
+
+
 }

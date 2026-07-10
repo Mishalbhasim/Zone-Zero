@@ -42,6 +42,10 @@ public class PlayerStateMachine : MonoBehaviourPun
         _animator = GetComponentInChildren<Animator>();
         _tpc = GetComponent<ThirdPersonController>();
         _aimTargetController = GetComponent<AimTargetController>();
+
+        // disable ragdoll on start
+        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+            rb.isKinematic = true;
     }
 
     void Update()
@@ -85,15 +89,21 @@ public class PlayerStateMachine : MonoBehaviourPun
     void OnEnable()
     {
         if (photonView != null && !photonView.IsMine) return;
-        EventBus.OnZoneDamageTick += TakeDamage;
+        EventBus.OnZoneDamageTick += TakeDamageFromZone;
     }
 
     void OnDisable()
     {
-        EventBus.OnZoneDamageTick -= TakeDamage;
+        EventBus.OnZoneDamageTick -= TakeDamageFromZone;
     }
 
-    public void TakeDamage(int damage)
+    // zone tick passes only int damage — wrapper keeps that signature intact
+    private void TakeDamageFromZone(int damage)
+    {
+        TakeDamage(damage, null);
+    }
+
+    public void TakeDamage(int damage, string attackerId = null)
     {
         if (!photonView.IsMine) return;
         if (_isDead) return;
@@ -102,7 +112,7 @@ public class PlayerStateMachine : MonoBehaviourPun
         CurrentHP = Mathf.Max(0, CurrentHP);
         EventBus.PlayerHealthChanged(CurrentHP, MaxHP);
 
-        if (CurrentHP <= 0) Die();
+        if (CurrentHP <= 0) Die(attackerId);
     }
 
     public void TryShoot()
@@ -118,13 +128,26 @@ public class PlayerStateMachine : MonoBehaviourPun
         StartCoroutine(ShootNextFrame());
     }
 
+    // called remotely by shooter (runs on shooter's client, targets victim's PhotonView)
+    public void RequestDamage(int damage, string attackerId)
+    {
+        photonView.RPC("RPC_TakeDamage", RpcTarget.All, damage, attackerId);
+    }
+
+    [PunRPC]
+    private void RPC_TakeDamage(int damage, string attackerId)
+    {
+        if (!photonView.IsMine) return; // only actual owner applies it
+        TakeDamage(damage, attackerId);
+    }
+
     private System.Collections.IEnumerator ShootNextFrame()
     {
         yield return new WaitForSeconds(0.2f);
         CurrentWeapon?.TryShoot();
     }
 
-    private void Die()
+    private void Die(string killerId = null)
     {
         if (_isDead) return;
         _isDead = true;
@@ -140,11 +163,11 @@ public class PlayerStateMachine : MonoBehaviourPun
             EventBus.PlayerDied();
 
         // notify all clients via RPC
-        photonView.RPC("RPC_PlayerDied", RpcTarget.All, photonView.Owner.UserId);
+        photonView.RPC("RPC_PlayerDied", RpcTarget.All, photonView.Owner.UserId, killerId);
     }
 
     [PunRPC]
-    private void RPC_PlayerDied(string playerId)
+    private void RPC_PlayerDied(string playerId, string killerId)
     {
         // play death anim on all clients
         PlayDeathAnim();
@@ -153,29 +176,28 @@ public class PlayerStateMachine : MonoBehaviourPun
         if (PhotonNetwork.IsMasterClient)
         {
             int placement = MatchManager.Instance.PlayersAlive;
-            EliminationManager.Instance.ReportElimination(playerId, placement);
+            EliminationManager.Instance.ReportElimination(playerId, placement, killerId);
         }
     }
 
     private void PlayDeathAnim()
     {
+        // disable animator
         var anim = GetComponentInChildren<Animator>();
-        if (anim != null && anim.runtimeAnimatorController != null)
-        {
-            foreach (var p in anim.parameters)
-            {
-                if (p.name == "Dead")
-                {
-                    anim.SetTrigger("Dead");
-                    break;
-                }
-            }
-        }
+        if (anim != null) anim.enabled = false;
+
+        // disable character controller
+        var cc = GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
+        // enable ragdoll
+        foreach (var rb in GetComponentsInChildren<Rigidbody>())
+            rb.isKinematic = false;
     }
 
     public void TakeDamageFromBot(int damage)
     {
         if (!photonView.IsMine) return;
-        TakeDamage(damage);
+        TakeDamage(damage, null);
     }
 }

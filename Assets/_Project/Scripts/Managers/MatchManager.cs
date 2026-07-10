@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 
 public class MatchManager : SceneSingleton<MatchManager>
@@ -10,14 +11,15 @@ public class MatchManager : SceneSingleton<MatchManager>
     void Start()
     {
 
-        EventBus.PlayersAliveChanged(PlayersAlive);
 
+        EventBus.PlayersAliveChanged(PlayersAlive);
     }
 
     public void StartCountdown(int totalPlayers)
     {
         PlayersAlive = totalPlayers;
         StartCoroutine(CountdownRoutine());
+        
     }
 
     private IEnumerator CountdownRoutine()
@@ -38,23 +40,31 @@ public class MatchManager : SceneSingleton<MatchManager>
         Debug.Log("[MatchManager] Match Started!");
     }
 
-    
 
- 
-    
-    // Master client calls this when any player orbot is eliminated.
-    public void OnEliminationReported(string eliminatedId, int placement)
+
+
+
+    // Master client calls this when any player or bot is eliminated.
+    public void OnEliminationReported(string eliminatedId, int placement, string killerId = null)
     {
+
+        Debug.Log($"[MatchManager] BEFORE decrement: PlayersAlive={PlayersAlive}, eliminatedId={eliminatedId}, killerId={killerId}");
         PlayersAlive--;
-        EventBus.PlayersAliveChanged(PlayersAlive);
         PlayersAlive = Mathf.Max(0, PlayersAlive);
 
-        Debug.Log($"[MatchManager] Elimination reported: {eliminatedId} | Remaining: {PlayersAlive}");
+        // placement = players still alive + 1
+        int actualPlacement = PlayersAlive + 1;
 
+        Debug.Log($"[MatchManager] Elimination reported: {eliminatedId} | Killer: {killerId} | Remaining: {PlayersAlive}");
+        EventBus.PlayersAliveChanged(PlayersAlive);
+
+        // pass actual placement + killer to elimination manager
+        EliminationManager.Instance?.SyncPlacement(eliminatedId, actualPlacement, PlayersAlive, killerId);
         CheckWinCondition();
     }
 
-    
+
+
     // Non-master clients call this to sync PlayersAlive from RPC.
     public void SyncPlayersAlive(int count)
     {
@@ -67,21 +77,21 @@ public class MatchManager : SceneSingleton<MatchManager>
     {
         if (!IsMatchActive) return;
         if (PlayersAlive > 1) return;
-
         IsMatchActive = false;
 
-        var winner = ScoreManager.Instance?.GetWinner();
-        if (winner != null)
+        // find last surviving player
+        var survivors = GameObject.FindGameObjectsWithTag("Player");
+        if (survivors.Length > 0)
         {
-            ScoreManager.Instance.PlayerWon(winner.PlayerId);
-            EventBus.PlayerWon(winner.PlayerId);
-            Debug.Log($"[MatchManager] Winner: {winner.PlayerId}");
+            var survivor = survivors[0].GetComponent<PhotonView>();
+            string winnerId = survivor != null ? survivor.Owner.UserId : "Unknown";
+            EliminationManager.Instance?.BroadcastWinner(winnerId);
+            Debug.Log($"[MatchManager] Winner: {winnerId}");
         }
         else
         {
-            // no winner found — last bot standing or edge case
-            EventBus.PlayerWon("Unknown");
-            Debug.LogWarning("[MatchManager] Win condition met but no winner found in ScoreManager.");
+            // no players alive — last bot won or edge case
+            EliminationManager.Instance?.BroadcastWinner("Unknown");
         }
     }
 
@@ -92,8 +102,7 @@ public class MatchManager : SceneSingleton<MatchManager>
         if (winner != null)
             EventBus.PlayerWon(winner.PlayerId);
     }
-
-    
+ 
 
     protected override void OnDestroy()
     {

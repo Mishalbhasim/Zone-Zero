@@ -257,6 +257,7 @@ namespace StarterAssets
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
                     if (_hasAnimator)
                         _animator.SetBool(_animIDJump, true);
+                    _input.jump = false;
                 }
 
                 if (_jumpTimeoutDelta >= 0.0f)

@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using Photon.Pun;
 
-
 public class EliminationManager : SceneSingleton<EliminationManager>
 {
     private PhotonView _pv;
@@ -13,91 +12,48 @@ public class EliminationManager : SceneSingleton<EliminationManager>
     }
 
     // Player Elimination
-
-    public void ReportElimination(string eliminatedId, int placement)
+    public void ReportElimination(string eliminatedId, int placement, string killerId = null)
     {
         if (!PhotonNetwork.IsMasterClient)
         {
             Debug.LogWarning("[EliminationManager] ReportElimination called on non-master. Ignored.");
             return;
         }
-
-        Debug.Log($"[EliminationManager] Eliminated: {eliminatedId} | Placement: {placement}");
-
-        // tell MatchManager on master client
-        MatchManager.Instance?.OnEliminationReported(eliminatedId, placement);
-
-        // sync new PlayersAlive count to ALL clients
-        int remaining = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 0;
-        _pv.RPC("RPC_SyncElimination", RpcTarget.All, eliminatedId, placement, remaining);
+        Debug.Log($"[EliminationManager] Eliminated: {eliminatedId} | Placement: {placement} | Killer: {killerId}");
+        // tell MatchManager — it calculates actual placement and calls SyncPlacement
+        MatchManager.Instance?.OnEliminationReported(eliminatedId, placement, killerId);
     }
 
-    // Bot Death Sync
-
-    public void ReportBotDeath(string botName)
+    // Called from MatchManager after calculating actual placement
+    public void SyncPlacement(string eliminatedId, int actualPlacement, int remaining, string killerId = null)
     {
-        Debug.Log($"[EliminationManager] Bot died: {botName}");
+        _pv.RPC("RPC_SyncElimination", RpcTarget.All, eliminatedId, actualPlacement, remaining, killerId);
+    }
 
-        // report elimination to match manager if it is master clinet only
-        if (PhotonNetwork.IsMasterClient)
-        {
-            int placement = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 1;
-            MatchManager.Instance?.OnEliminationReported(botName, placement);
-            int remaining = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 0;
-            _pv.RPC("RPC_SyncBotDeath", RpcTarget.All, botName, remaining);
-        }
-        else
-        {
-            // non-master client killed a bot — tell master client
-            _pv.RPC("RPC_RequestBotDeath", RpcTarget.MasterClient, botName);
-        }
+    public void BroadcastWinner(string winnerId)
+    {
+        _pv.RPC("RPC_PlayerWon", RpcTarget.All, winnerId);
     }
 
     [PunRPC]
-    private void RPC_RequestBotDeath(string botName)
+    private void RPC_PlayerWon(string winnerId)
     {
-        // master client received bot death from another client
-        // process and broadcast to all
-        int placement = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 1;
-        MatchManager.Instance?.OnEliminationReported(botName, placement);
-        int remaining = MatchManager.Instance != null ? MatchManager.Instance.PlayersAlive : 0;
-        _pv.RPC("RPC_SyncBotDeath", RpcTarget.All, botName, remaining);
+        EventBus.PlayerWon(winnerId);
     }
 
     [PunRPC]
-    private void RPC_SyncBotDeath(string botName, int playersRemaining)
+    private void RPC_SyncElimination(string eliminatedId, int placement, int playersRemaining, string killerId)
     {
-        Debug.Log($"[EliminationManager] RPC: Bot {botName} died | Remaining: {playersRemaining}");
+        Debug.Log($"[EliminationManager] RPC: {eliminatedId} eliminated | Placement: {placement} | Remaining: {playersRemaining} | Killer: {killerId}");
 
-        // find bot by name and disable on all clients
-        var bot = GameObject.Find(botName);
-        if (bot != null)
-            bot.SetActive(false);
+        EventBus.PlayersAliveChanged(playersRemaining);
 
-        // update HUD
-        EventBus.PlayersRemainingChanged(playersRemaining);
-        BotManager.Instance?.DecrementBotsRemaining();
-
-        // non-master clients sync count
-        if (!PhotonNetwork.IsMasterClient)
-            MatchManager.Instance?.SyncPlayersAlive(playersRemaining);
-    }
-
-    //Player Elimination RPC
-
-    [PunRPC]
-    private void RPC_SyncElimination(string eliminatedId, int placement, int playersRemaining)
-    {
-        Debug.Log($"[EliminationManager] RPC: {eliminatedId} eliminated | Remaining: {playersRemaining}");
-
-        // update HUD on all clients
-        EventBus.PlayersRemainingChanged(playersRemaining);
-
-        // non-master clients sync their local count
         if (!PhotonNetwork.IsMasterClient)
             MatchManager.Instance?.SyncPlayersAlive(playersRemaining);
 
-        // fire for kill feed / scoreboard
         EventBus.PlayerEliminated(eliminatedId, placement);
+
+        if (!string.IsNullOrEmpty(killerId))
+            ScoreManager.Instance?.PlayerKilledPlayer(killerId, eliminatedId);
     }
 }

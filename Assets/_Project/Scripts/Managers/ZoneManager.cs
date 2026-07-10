@@ -93,10 +93,9 @@ public class ZoneManager : SceneSingleton<ZoneManager>
 
     void Update()
     {
-        if (_isShrinking || CurrentRadius <= 0) return;
+        if (_isShrinking) return;
         CheckPlayerZoneDamage();
     }
-
     private void CheckPlayerZoneDamage()
     {
         _damageTimer += Time.deltaTime;
