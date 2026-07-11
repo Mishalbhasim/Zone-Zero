@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Photon.Pun;
 using UnityEngine;
 
 public class ScoreManager : SceneSingleton<ScoreManager>
@@ -21,11 +22,10 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 
     private int _eliminationOrder = 30;
 
-  
+
 
     void Start()
     {
-        EventBus.OnBotKilled += OnBotKilled;
         EventBus.OnMatchStarted += OnMatchStarted;
     }
 
@@ -103,22 +103,24 @@ public class ScoreManager : SceneSingleton<ScoreManager>
         _eliminationOrder = 30;
     }
 
-    private void OnBotKilled(int botId)
+    private void OnMatchStarted(int total)
     {
-        string playerId = GameManager.Instance?.LocalPlayerId;
-        Debug.Log($"[ScoreManager] Bot killed by: {playerId} | Registered: {_scores.ContainsKey(playerId)}");
-        if (string.IsNullOrEmpty(playerId)) return;
-        PlayerKilledBot(playerId);
-    }
+        Reset();
 
-    private void OnMatchStarted(int total) => Reset();
+        // Register every real player here, AFTER Reset() — not earlier in
+        // PhotonNetworkManager, since Reset() (triggered by this same
+        // MatchStarted event) would wipe an earlier registration due to the
+        // 3s countdown coroutine running between spawn and match start.
+        foreach (var p in PhotonNetwork.PlayerList)
+        {
+            if (string.IsNullOrEmpty(p.UserId)) continue;
+            RegisterPlayer(p.UserId, p.NickName);
+        }
+    }
 
     protected override void OnDestroy()
     {
-        EventBus.OnBotKilled -= OnBotKilled;
         EventBus.OnMatchStarted -= OnMatchStarted;
-
-
     }
 
     public int GetKills(string playerId)

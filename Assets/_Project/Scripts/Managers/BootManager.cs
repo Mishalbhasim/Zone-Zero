@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using Photon.Realtime;
 
 public class BootManager : MonoBehaviour
 {
@@ -11,19 +12,19 @@ public class BootManager : MonoBehaviour
 
     void Start()
     {
-       
-
-
-        PhotonNetworkManager.Instance?.Connect();
-
         // load saved username into GameManager
         if (PlayerPrefs.HasKey(USERNAME_KEY))
         {
             string savedName = PlayerPrefs.GetString(USERNAME_KEY);
             GameManager.Instance.LocalPlayerName = savedName;
-            Photon.Pun.PhotonNetwork.NickName = savedName;
             GameManager.Instance.LocalPlayerId = savedName;
-            
+
+            // MUST be set before Connect() — UserId is only sent to Photon
+            // (and synced to other clients) as part of the connection handshake.
+            Photon.Pun.PhotonNetwork.NickName = savedName;
+            Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(savedName);
+
+            PhotonNetworkManager.Instance?.Connect();
 
             Debug.Log($"[BootManager] Username found: {savedName} → loading MainMenu");
             GameManager.Instance.TransitionTo(GameManager.GameState.MainMenu);
@@ -42,16 +43,15 @@ public class BootManager : MonoBehaviour
         PlayerPrefs.SetString(USERNAME_KEY, username);
         PlayerPrefs.Save();
         GameManager.Instance.LocalPlayerName = username;
-        Photon.Pun.PhotonNetwork.NickName = username;
         GameManager.Instance.LocalPlayerId = username;
+
+        // Set AuthValues BEFORE connecting so UserId is registered with Photon
+        // and synced to every other client (Owner.UserId, PlayerList, etc).
+        Photon.Pun.PhotonNetwork.NickName = username;
+        Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(username);
+
+        PhotonNetworkManager.Instance?.Connect();
+
         Debug.Log($"[BootManager] Username saved: {username}");
-    }
-
-
-    public static void ClearUsername()
-    {
-        PlayerPrefs.DeleteKey(USERNAME_KEY);
-        PlayerPrefs.Save();
-        Debug.Log("[BootManager] Username cleared");
     }
 }

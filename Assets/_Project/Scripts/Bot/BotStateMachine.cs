@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 
@@ -110,15 +110,25 @@ public class BotStateMachine : MonoBehaviour
 
         BotManager.Instance?.DecrementBotsRemaining();
 
-        // only fire kill event for the actual killer
+        // Credit the kill in ScoreManager on EVERY client — this RPC already
+        // reaches all clients, and now that all players are registered
+        // (see ScoreManager.OnMatchStarted) every client's ScoreManager
+        // dictionary can hold this same killerId entry, keeping kills/score
+        // consistent for whoever views the death/victory screen.
+        if (!string.IsNullOrEmpty(killerUserId))
+            ScoreManager.Instance?.PlayerKilledBot(killerUserId);
+
+        // local-only event, still guarded to the actual killer — used for
+        // this client's own HUD feedback (e.g. hit marker / kill counter FX)
         if (!string.IsNullOrEmpty(killerUserId) && killerUserId == PhotonNetwork.LocalPlayer.UserId)
             EventBus.BotKilled(0);
 
         if (PhotonNetwork.IsMasterClient)
         {
             EliminationManager.Instance?.ReportElimination(
-                killerUserId,
-                MatchManager.Instance.PlayersAlive
+                $"BOT_{gameObject.name}_{photonView.ViewID}", // bot's own id — never collides with a player UserId
+                MatchManager.Instance.PlayersAlive,
+                killerUserId // actual killer, passed correctly now
             );
             StartCoroutine(DestroyAfterDelay());
         }
@@ -139,7 +149,7 @@ public class BotStateMachine : MonoBehaviour
             float dist = Vector3.Distance(transform.position, player.transform.position);
             if (dist > DetectionRange) continue;
 
-            // proximity detection � no FOV needed when very close
+            // proximity detection � no FOV needed when very close
             if (dist < ProximityRange)
             {
                 CurrentTarget = player.transform;
@@ -183,7 +193,17 @@ public class BotStateMachine : MonoBehaviour
 
             if (attacker != null)
             {
-                _lastKillerUserId = PhotonNetwork.LocalPlayer.UserId; // player killed it
+                // Resolve the actual shooter's UserId from the attacker's own
+                // PhotonView, instead of assuming it's whoever's client is
+                // running this code (Master Client). Only correct by
+                // coincidence in solo testing (you ARE the Master Client);
+                // in real multiplayer this would wrongly credit the Master
+                // Client for every bot kill regardless of who actually shot.
+                var attackerPV = attacker.GetComponentInParent<PhotonView>();
+                _lastKillerUserId = (attackerPV != null && attackerPV.Owner != null)
+                    ? attackerPV.Owner.UserId
+                    : PhotonNetwork.LocalPlayer.UserId; // fallback
+
                 if (_currentState != ShootState)
                 {
                     CurrentTarget = attacker;
@@ -197,8 +217,15 @@ public class BotStateMachine : MonoBehaviour
         }
         else
         {
-            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage,
-                PhotonView.Find(PhotonNetwork.LocalPlayer.ActorNumber)?.ViewID ?? -1);
+            // Use the attacker Transform we already have (the shooter's own
+            // client calling this locally before forwarding to Master) to
+            // find its PhotonView's ViewID directly. The previous version
+            // passed PhotonNetwork.LocalPlayer.ActorNumber into
+            // PhotonView.Find(), which expects a ViewID, not an ActorNumber
+            // — those are different ID spaces, so this would resolve to the
+            // wrong view (or none) whenever a non-Master client shot a bot.
+            var attackerPV = attacker != null ? attacker.GetComponentInParent<PhotonView>() : null;
+            photonView.RPC("RPC_TakeDamage", RpcTarget.MasterClient, damage, attackerPV?.ViewID ?? -1);
         }
     }
 

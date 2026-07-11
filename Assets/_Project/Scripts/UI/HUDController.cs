@@ -137,14 +137,6 @@ public class HUDController : MonoBehaviour
         Debug.Log($"[HUD] Kill registered. Total: {_myKills}");
     }
 
-    private void OnPlayerEliminated(string playerId, int placement)
-    {
-        if (playerId == PhotonNetwork.LocalPlayer.UserId)
-            _myPlacement = placement;
-    }
-
-    //Death Screen
-
     private void ShowDeathScreen()
     {
         _gameplayHUD?.SetActive(false);
@@ -153,14 +145,38 @@ public class HUDController : MonoBehaviour
         if (_deathScreen == null) return;
         _deathScreen.SetActive(true);
 
+        _isDead = true;
+
+        // Populate with whatever we have right now — placement may not have
+        // arrived yet (see comment in OnPlayerEliminated below), so this
+        // will show stale/0 placement briefly until RefreshDeathStats runs
+        // again once the real value comes in.
+        RefreshDeathStats();
+    }
+
+    private void RefreshDeathStats()
+    {
+        if (_statsText == null) return;
+
         string localId = GameManager.Instance?.LocalPlayerId ?? "";
         int kills = ScoreManager.Instance?.GetKills(localId) ?? 0;
         int score = ScoreManager.Instance?.GetScore(localId) ?? 0;
 
-        if (_statsText != null)
-            _statsText.text = $"#{_myPlacement} out of {_totalPlayers}  |  Kills: {kills}  |  Score: {score}";
+        _statsText.text = $"#{_myPlacement} out of {_totalPlayers}  |  Kills: {kills}  |  Score: {score}";
+    }
 
-        _isDead = true;
+    private void OnPlayerEliminated(string playerId, int placement)
+    {
+        if (playerId == PhotonNetwork.LocalPlayer.UserId)
+        {
+            _myPlacement = placement;
+            // ShowDeathScreen may have already rendered before this placement
+            // arrived (it comes back via an RPC round-trip, while the death
+            // screen pops immediately on the local PlayerDied event) — refresh
+            // the text now that we actually have the real value.
+            if (_isDead)
+                RefreshDeathStats();
+        }
     }
 
     private string GetPlayerName(string userId)

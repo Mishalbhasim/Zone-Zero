@@ -53,7 +53,10 @@ public class EliminationManager : SceneSingleton<EliminationManager>
 
         EventBus.PlayerEliminated(eliminatedId, placement);
 
-        if (!string.IsNullOrEmpty(killerId))
+        // Bot eliminations are already credited via ScoreManager.PlayerKilledBot
+        // in BotStateMachine.RPC_BotDied — skip here to avoid double-counting.
+        bool isBotElimination = eliminatedId != null && eliminatedId.StartsWith("BOT_");
+        if (!isBotElimination && !string.IsNullOrEmpty(killerId))
             ScoreManager.Instance?.PlayerKilledPlayer(killerId, eliminatedId);
     }
 }

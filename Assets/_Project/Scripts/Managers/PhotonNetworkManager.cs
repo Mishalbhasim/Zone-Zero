@@ -18,7 +18,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         base.Awake();
         PhotonNetwork.AddCallbackTarget(this);
 
-       
+
     }
 
     public void Connect()
@@ -53,8 +53,8 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void OnConnectedToMaster()
     {
-        
-       
+
+
     }
 
     public void OnDisconnected(DisconnectCause cause)
@@ -85,11 +85,11 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         SpawnLocalPlayer();
         BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
 
-        // register AFTER match started event fires
-        string id = GameManager.Instance?.LocalPlayerId;
-        string name = GameManager.Instance?.LocalPlayerName;
-        ScoreManager.Instance?.RegisterPlayer(id, name);
-        Debug.Log($"[ScoreManager] Registered: {id} | Name: {name}");
+        // NOTE: player registration for ScoreManager happens in
+        // ScoreManager.OnMatchStarted (after its Reset()), not here —
+        // registering here gets wiped by Reset() once the 3s countdown
+        // finishes and MatchStarted fires.
+        Debug.Log($"[PhotonNetworkManager] Arena loaded. Local: {GameManager.Instance?.LocalPlayerId}");
     }
 
     private void SpawnLocalPlayer()
@@ -101,7 +101,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
             Quaternion.identity
         );
 
-        
+
     }
     public void OnJoinRoomFailed(short code, string msg)
         => Debug.LogError($"[PhotonNetworkManager] Join failed: {msg}");
@@ -110,7 +110,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void OnCreateRoomFailed(short code, string msg) { }
     public void OnLeftRoom() { }
     public void OnFriendListUpdate(System.Collections.Generic.List<FriendInfo> list) { }
-    
+
     public void OnRegionListReceived(RegionHandler rh) { }
     public void OnCustomAuthenticationResponse(System.Collections.Generic.Dictionary<string, object> d) { }
     public void OnCustomAuthenticationFailed(string msg) { }
