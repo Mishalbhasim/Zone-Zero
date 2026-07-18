@@ -14,7 +14,7 @@ public class GameManager : Singleton<GameManager>
 
     public GameState CurrentState { get; private set; }
 
-    // local player session
+    // local player informatin
     public string LocalPlayerId { get; set; }
     public string LocalPlayerName { get; set; }
 

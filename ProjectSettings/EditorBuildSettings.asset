@@ -24,5 +24,7 @@ EditorBuildSettings:
     path: Assets/_Project/Scenes/Arena_Test.unity
     guid: 984529bd874aaf244a5563c5a288c21f
   m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 65480ff5dace8dc43b322d2b851dcd28,
+      type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 9e7be553448fa2546aea5752021cbcf7,
       type: 2}

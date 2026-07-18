@@ -20,7 +20,7 @@ public class EliminationManager : SceneSingleton<EliminationManager>
             return;
         }
         Debug.Log($"[EliminationManager] Eliminated: {eliminatedId} | Placement: {placement} | Killer: {killerId}");
-        // tell MatchManager — it calculates actual placement and calls SyncPlacement
+        // calls matchmanager and tells to calculate placement and  call syncPlacement
         MatchManager.Instance?.OnEliminationReported(eliminatedId, placement, killerId);
     }
 
@@ -38,6 +38,7 @@ public class EliminationManager : SceneSingleton<EliminationManager>
     [PunRPC]
     private void RPC_PlayerWon(string winnerId)
     {
+        ScoreManager.Instance?.PlayerWon(winnerId);
         EventBus.PlayerWon(winnerId);
     }
 
@@ -53,10 +54,9 @@ public class EliminationManager : SceneSingleton<EliminationManager>
 
         EventBus.PlayerEliminated(eliminatedId, placement);
 
-        // Bot eliminations are already credited via ScoreManager.PlayerKilledBot
-        // in BotStateMachine.RPC_BotDied — skip here to avoid double-counting.
+
         bool isBotElimination = eliminatedId != null && eliminatedId.StartsWith("BOT_");
-        if (!isBotElimination && !string.IsNullOrEmpty(killerId))
+        if (!isBotElimination)
             ScoreManager.Instance?.PlayerKilledPlayer(killerId, eliminatedId);
     }
 }

@@ -51,7 +51,7 @@ public class SpawnManager : SceneSingleton<SpawnManager>
         return false;
     }
 
-    //Determines where the bot gets spawned
+    // finds where the bots should spawn
     public Vector3 GetSeededSpawnPoint(int index, int seed)
     {
         var rng = new System.Random(seed + index);

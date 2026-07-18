@@ -7,10 +7,10 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 {
     // Score config
     private const int KILL_PLAYER = 50;
-    private const int KILL_BOT = 10;
+    private const int KILL_BOT = 50;
     private const int WIN_BONUS = 200;
 
-    // placement points (30th=0, 1st=500)
+    
     private static readonly int[] PLACEMENT_POINTS = {
         500, 300, 200, 150, 120, 100, 90, 80, 70, 60,
          55,  50,  45,  40,  35,  30, 25, 20, 18, 16,
@@ -56,19 +56,13 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 
     public void PlayerKilledPlayer(string killerId, string victimId)
     {
-        if (_scores.ContainsKey(killerId))
+
+        if (!string.IsNullOrEmpty(killerId) && _scores.ContainsKey(killerId))
         {
             _scores[killerId].Kills++;
             AddScore(killerId, KILL_PLAYER);
         }
 
-        if (_scores.ContainsKey(victimId))
-        {
-            _scores[victimId].Deaths++;
-            int placement = _eliminationOrder--;
-            int pts = PLACEMENT_POINTS[Mathf.Clamp(placement - 1, 0, 29)];
-            AddScore(victimId, pts);
-        }
     }
 
     public void PlayerWon(string playerId)
@@ -107,10 +101,6 @@ public class ScoreManager : SceneSingleton<ScoreManager>
     {
         Reset();
 
-        // Register every real player here, AFTER Reset() — not earlier in
-        // PhotonNetworkManager, since Reset() (triggered by this same
-        // MatchStarted event) would wipe an earlier registration due to the
-        // 3s countdown coroutine running between spawn and match start.
         foreach (var p in PhotonNetwork.PlayerList)
         {
             if (string.IsNullOrEmpty(p.UserId)) continue;

@@ -112,7 +112,7 @@ public class HUDController : MonoBehaviour
         else
             fill.color = new Color(1f, 0.24f, 0.24f);    // red
 
-        // after fill color change — add:
+        
         if (_healthText != null)
             _healthText.text = $"{current}";
     }
@@ -146,11 +146,6 @@ public class HUDController : MonoBehaviour
         _deathScreen.SetActive(true);
 
         _isDead = true;
-
-        // Populate with whatever we have right now — placement may not have
-        // arrived yet (see comment in OnPlayerEliminated below), so this
-        // will show stale/0 placement briefly until RefreshDeathStats runs
-        // again once the real value comes in.
         RefreshDeathStats();
     }
 
@@ -170,10 +165,7 @@ public class HUDController : MonoBehaviour
         if (playerId == PhotonNetwork.LocalPlayer.UserId)
         {
             _myPlacement = placement;
-            // ShowDeathScreen may have already rendered before this placement
-            // arrived (it comes back via an RPC round-trip, while the death
-            // screen pops immediately on the local PlayerDied event) — refresh
-            // the text now that we actually have the real value.
+            
             if (_isDead)
                 RefreshDeathStats();
         }

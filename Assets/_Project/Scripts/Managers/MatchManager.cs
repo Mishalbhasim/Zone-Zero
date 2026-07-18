@@ -44,7 +44,7 @@ public class MatchManager : SceneSingleton<MatchManager>
 
 
 
-    // Master client calls this when any player or bot is eliminated.
+    // Master client calls this when any player or bot is dead.
     public void OnEliminationReported(string eliminatedId, int placement, string killerId = null)
     {
 
@@ -52,13 +52,13 @@ public class MatchManager : SceneSingleton<MatchManager>
         PlayersAlive--;
         PlayersAlive = Mathf.Max(0, PlayersAlive);
 
-        // placement = players still alive + 1
+        // rank
         int actualPlacement = PlayersAlive + 1;
 
         Debug.Log($"[MatchManager] Elimination reported: {eliminatedId} | Killer: {killerId} | Remaining: {PlayersAlive}");
         EventBus.PlayersAliveChanged(PlayersAlive);
 
-        // pass actual placement + killer to elimination manager
+        
         EliminationManager.Instance?.SyncPlacement(eliminatedId, actualPlacement, PlayersAlive, killerId);
         CheckWinCondition();
     }

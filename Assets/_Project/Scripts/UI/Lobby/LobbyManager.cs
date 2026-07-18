@@ -15,6 +15,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     [SerializeField] private TextMeshProUGUI _timerLabel;
     [SerializeField] private Button _cancelButton;
     [SerializeField] private Transform _playerListContent;
+    [SerializeField] private TextMeshProUGUI _roomCodeText;
 
     [Header("Player List Item")]
     [SerializeField] private GameObject _playerListItemPrefab;
@@ -36,12 +37,22 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         _timer = _countdownSeconds;
         _cancelButton?.onClick.AddListener(OnCancelClicked);
 
-        if (!PhotonNetwork.IsConnectedAndReady)
+        if (PhotonNetwork.InRoom)
+        {
+ 
             UpdateUI();
-        else if (!PhotonNetwork.InRoom)
+            RefreshPlayerList();
+            Invoke(nameof(TryStartCountdown), 0.5f);
+        }
+        else if (!PhotonNetwork.IsConnectedAndReady)
+        {
+            UpdateUI();
+        }
+        else
+        {
             PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+        }
     }
-
     void Update()
     {
         if (!_countingDown || _matchStarting) return;
@@ -94,6 +105,14 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         int current = PhotonNetwork.CurrentRoom.PlayerCount;
         int max = PhotonNetwork.CurrentRoom.MaxPlayers;
         _playerCountText.text = $"{current}/{max}";
+
+        if (_roomCodeText != null)
+        {
+            if (!PhotonNetwork.CurrentRoom.IsVisible)
+                _roomCodeText.text = $"Room Code: {PhotonNetwork.CurrentRoom.Name}";
+            else
+                _roomCodeText.text = "";
+        }
     }
 
     private void RefreshPlayerList()
@@ -158,8 +177,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.IsMasterClient)
         {
-            PhotonNetwork.CurrentRoom.IsOpen = false;    // ADD — no new joins
-            PhotonNetwork.CurrentRoom.IsVisible = false; // ADD — hide from room list
+            PhotonNetwork.CurrentRoom.IsOpen = false;   
+            PhotonNetwork.CurrentRoom.IsVisible = false; 
             PhotonNetwork.LoadLevel(_arenaScene);
         }
     }
@@ -174,6 +193,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnLeftRoom()
     {
-        SceneManager.LoadScene(_mainMenuScene); // load AFTER fully left
+        SceneManager.LoadScene(_mainMenuScene);
     }
 }

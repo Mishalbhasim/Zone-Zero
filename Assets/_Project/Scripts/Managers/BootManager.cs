@@ -19,12 +19,11 @@ public class BootManager : MonoBehaviour
             GameManager.Instance.LocalPlayerName = savedName;
             GameManager.Instance.LocalPlayerId = savedName;
 
-            // MUST be set before Connect() — UserId is only sent to Photon
-            // (and synced to other clients) as part of the connection handshake.
+            //setting user id
             Photon.Pun.PhotonNetwork.NickName = savedName;
             Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(savedName);
 
-            PhotonNetworkManager.Instance?.Connect();
+            
 
             Debug.Log($"[BootManager] Username found: {savedName} → loading MainMenu");
             GameManager.Instance.TransitionTo(GameManager.GameState.MainMenu);
@@ -45,12 +44,11 @@ public class BootManager : MonoBehaviour
         GameManager.Instance.LocalPlayerName = username;
         GameManager.Instance.LocalPlayerId = username;
 
-        // Set AuthValues BEFORE connecting so UserId is registered with Photon
-        // and synced to every other client (Owner.UserId, PlayerList, etc).
+        
         Photon.Pun.PhotonNetwork.NickName = username;
         Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(username);
 
-        PhotonNetworkManager.Instance?.Connect();
+        
 
         Debug.Log($"[BootManager] Username saved: {username}");
     }

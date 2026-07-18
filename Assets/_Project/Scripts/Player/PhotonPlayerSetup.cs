@@ -20,7 +20,7 @@ public class PhotonPlayerSetup : MonoBehaviourPun
             var psm = GetComponent<PlayerStateMachine>();
             if (psm != null) psm.enabled = false;
 
-            // FIX: lock ragdoll bones kinematic for remote clone too
+            
             foreach (var rb in GetComponentsInChildren<Rigidbody>())
                 rb.isKinematic = true;
             return;
@@ -38,7 +38,7 @@ public class PhotonPlayerSetup : MonoBehaviourPun
             }
         }
 
-        // wire ThirdPersonController camera target
+        // wire ThirdPersonController camera target7539
         var tpc2 = GetComponent<ThirdPersonController>();
         if (tpc2 != null)
         {

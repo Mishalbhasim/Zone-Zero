@@ -114,7 +114,7 @@ public class ZoneManager : SceneSingleton<ZoneManager>
                 EventBus.ZoneDamageTick(_damagePerSecond);
         }
 
-        // damage bots outside zone (master only)
+        // damage bots outside zone only master
         if (!PhotonNetwork.IsMasterClient) return;
         var bots = GameObject.FindGameObjectsWithTag("Bot");
         foreach (var bot in bots)

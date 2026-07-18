@@ -10,29 +10,29 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public bool IsConnected => PhotonNetwork.IsConnected;
     public bool IsInRoom => PhotonNetwork.InRoom;
     public int PlayerCount => PhotonNetwork.CurrentRoom?.PlayerCount ?? 0;
-
     [SerializeField] private GameObject _playerPrefab;
+    public string SelectedRegion { get; set; } = "in"; // default: India
+
+    public string CurrentRoomCode { get; private set; }
 
     protected override void Awake()
     {
         base.Awake();
         PhotonNetwork.AddCallbackTarget(this);
-
-
     }
 
     public void Connect()
     {
         if (PhotonNetwork.IsConnected) return;
+        PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = SelectedRegion;
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
-        Debug.Log("[PhotonNetworkManager] Connecting...");
+        Debug.Log($"[PhotonNetworkManager] Connecting to region: {SelectedRegion}...");
     }
 
     public void JoinOrCreateRoom()
     {
         MapSeed = Random.Range(0, 99999);
-        // try joining random room first
         PhotonNetwork.JoinRandomRoom();
     }
 
@@ -44,7 +44,38 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         PhotonNetwork.CreateRoom(roomName, options, TypedLobby.Default);
     }
 
+    // ---- Private "Friends" room with a short shareable code ----
 
+    public void CreatePrivateRoom()
+    {
+        MapSeed = Random.Range(0, 99999);
+        CurrentRoomCode = GenerateRoomCode();
+
+        var options = new RoomOptions
+        {
+            MaxPlayers = 30,
+            IsVisible = false,   // hidden from public random matchmaking
+            IsOpen = true
+        };
+
+        PhotonNetwork.CreateRoom(CurrentRoomCode, options, TypedLobby.Default);
+        Debug.Log($"[PhotonNetworkManager] Creating private room with code: {CurrentRoomCode}");
+    }
+
+    public void JoinRoomByCode(string code)
+    {
+        PhotonNetwork.JoinRoom(code);
+    }
+
+    private string GenerateRoomCode()
+    {
+        // no easily-confused characters like 0/O or 1/I
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        var code = new System.Text.StringBuilder();
+        for (int i = 0; i < 6; i++)
+            code.Append(chars[Random.Range(0, chars.Length)]);
+        return code.ToString();
+    }
 
     public void LeaveRoom() => PhotonNetwork.LeaveRoom();
 
@@ -53,8 +84,6 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void OnConnectedToMaster()
     {
-
-
     }
 
     public void OnDisconnected(DisconnectCause cause)
@@ -65,7 +94,6 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void OnJoinedRoom()
     {
         Debug.Log($"[PhotonNetworkManager] Joined room. Seed: {MapSeed}");
-
         if (PhotonNetwork.IsMasterClient)
         {
             var props = new ExitGames.Client.Photon.Hashtable();
@@ -77,6 +105,12 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
             if (PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue("seed", out object seed))
                 MapSeed = (int)seed;
         }
+
+        // Single source of truth for the Lobby transition — this fires
+        // for every path: Play (JoinOrCreateRoom), Create Room
+        // (Photon calls OnCreatedRoom then OnJoinedRoom for the
+        // creator), and Join Room by code (JoinRoomByCode).
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
     }
 
     // called when Arena scene loads
@@ -84,11 +118,6 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     {
         SpawnLocalPlayer();
         BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
-
-        // NOTE: player registration for ScoreManager happens in
-        // ScoreManager.OnMatchStarted (after its Reset()), not here —
-        // registering here gets wiped by Reset() once the 3s countdown
-        // finishes and MatchStarted fires.
         Debug.Log($"[PhotonNetworkManager] Arena loaded. Local: {GameManager.Instance?.LocalPlayerId}");
     }
 
@@ -100,17 +129,24 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
             spawnPos,
             Quaternion.identity
         );
-
-
     }
+
     public void OnJoinRoomFailed(short code, string msg)
         => Debug.LogError($"[PhotonNetworkManager] Join failed: {msg}");
 
-    public void OnCreatedRoom() { }
-    public void OnCreateRoomFailed(short code, string msg) { }
+    public void OnCreatedRoom()
+    {
+        Debug.Log("[PhotonNetworkManager] Room created successfully.");
+        // OnJoinedRoom() fires right after this for the room creator
+        // too (Photon calls both) — the actual scene load happens
+        // there, so this stays log-only / a hook for future use.
+    }
+
+    public void OnCreateRoomFailed(short code, string msg)
+        => Debug.LogError($"[PhotonNetworkManager] Create room failed: {msg}");
+
     public void OnLeftRoom() { }
     public void OnFriendListUpdate(System.Collections.Generic.List<FriendInfo> list) { }
-
     public void OnRegionListReceived(RegionHandler rh) { }
     public void OnCustomAuthenticationResponse(System.Collections.Generic.Dictionary<string, object> d) { }
     public void OnCustomAuthenticationFailed(string msg) { }
