@@ -12,28 +12,16 @@ public class BootManager : MonoBehaviour
 
     void Start()
     {
-        // load saved username into GameManager
         if (PlayerPrefs.HasKey(USERNAME_KEY))
         {
-            string savedName = PlayerPrefs.GetString(USERNAME_KEY);
-            GameManager.Instance.LocalPlayerName = savedName;
-            GameManager.Instance.LocalPlayerId = savedName;
-
-            //setting user id
-            Photon.Pun.PhotonNetwork.NickName = savedName;
-            Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(savedName);
-
-            
-
-            Debug.Log($"[BootManager] Username found: {savedName} → loading MainMenu");
-            GameManager.Instance.TransitionTo(GameManager.GameState.MainMenu);
-            SceneManager.LoadScene(MAINMENU_SCENE);
+            Debug.Log("[BootManager] Previous username found → loading Login screen (pre-filled)");
         }
         else
         {
-            Debug.Log("[BootManager] No username found → loading UsernameScreen");
-            SceneManager.LoadScene(USERNAME_SCENE);
+            Debug.Log("[BootManager] No previous username → loading Register screen");
         }
+
+        SceneManager.LoadScene(USERNAME_SCENE);
     }
 
 

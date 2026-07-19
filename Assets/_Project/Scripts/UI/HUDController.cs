@@ -147,6 +147,8 @@ public class HUDController : MonoBehaviour
 
         _isDead = true;
         RefreshDeathStats();
+
+        ScoreManager.Instance?.SubmitLocalScoreToPlayFab();
     }
 
     private void RefreshDeathStats()
@@ -206,6 +208,8 @@ public class HUDController : MonoBehaviour
 
         if (_winnerStatsText != null)
             _winnerStatsText.text = $"Kills: {kills}  |  Score: {score}";
+
+        ScoreManager.Instance?.SubmitLocalScoreToPlayFab();
     }
 
     //Return to Lobby

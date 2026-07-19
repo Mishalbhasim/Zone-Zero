@@ -2,6 +2,8 @@
 using System.Linq;
 using Photon.Pun;
 using UnityEngine;
+using PlayFab;
+using PlayFab.ClientModels;
 
 public class ScoreManager : SceneSingleton<ScoreManager>
 {
@@ -115,4 +117,32 @@ public class ScoreManager : SceneSingleton<ScoreManager>
 
     public int GetKills(string playerId)
     => _scores.ContainsKey(playerId) ? _scores[playerId].Kills : 0;
+
+
+
+    //upload score to prefab
+    public void SubmitLocalScoreToPlayFab()
+    {
+        string localId = GameManager.Instance?.LocalPlayerId;
+        if (string.IsNullOrEmpty(localId)) return;
+
+        int finalScore = GetScore(localId);
+
+        var request = new UpdatePlayerStatisticsRequest
+        {
+            Statistics = new List<StatisticUpdate>
+        {
+            new StatisticUpdate
+            {
+                StatisticName = "TotalScore",
+                Value = finalScore
+            }
+        }
+        };
+
+        PlayFabClientAPI.UpdatePlayerStatistics(request,
+            result => Debug.Log($"[PlayFab] Score submitted: {finalScore}"),
+            error => Debug.LogError($"[PlayFab] Score submission failed: {error.GenerateErrorReport()}")
+        );
+    }
 }

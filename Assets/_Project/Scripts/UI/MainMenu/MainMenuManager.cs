@@ -14,10 +14,12 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _createRoomButton;
     [SerializeField] private Button _joinRoomButton;
     [SerializeField] private Button _closeFriendsPanelButton;
+    [SerializeField] private Button _leaderboardButton;
 
     [Header("Panels")]
     [SerializeField] private GameObject _settingsPanel;
     [SerializeField] private GameObject _friendsPanel;
+    [SerializeField] private GameObject _leaderboardPanel;
 
     [Header("Version")]
     [SerializeField] private TextMeshProUGUI _versionText;
@@ -59,6 +61,7 @@ public class MainMenuManager : MonoBehaviour
         _closeFriendsPanelButton?.onClick.AddListener(OnCloseFriendsPanelClicked);
         _confirmJoinButton?.onClick.AddListener(OnConfirmJoinClicked);
         _closeJoinRoomPanelButton?.onClick.AddListener(OnCloseJoinRoomPanelClicked);
+        _leaderboardButton?.onClick.AddListener(OnLeaderboardClicked);
 
         // hide panels on start
         if (_settingsPanel != null)
@@ -69,6 +72,9 @@ public class MainMenuManager : MonoBehaviour
 
         if (_joinRoomPanel != null)
             _joinRoomPanel.SetActive(false);
+
+        if (_leaderboardPanel != null)
+            _leaderboardPanel.SetActive(false);
     }
 
     private void ShowOnlyPanel(GameObject panelToShow)
@@ -76,6 +82,7 @@ public class MainMenuManager : MonoBehaviour
         if (_settingsPanel != null) _settingsPanel.SetActive(panelToShow == _settingsPanel);
         if (_friendsPanel != null) _friendsPanel.SetActive(panelToShow == _friendsPanel);
         if (_joinRoomPanel != null) _joinRoomPanel.SetActive(panelToShow == _joinRoomPanel);
+        if (_leaderboardPanel != null) _leaderboardPanel.SetActive(panelToShow == _leaderboardPanel);
     }
 
     private void OnPlayClicked()
@@ -87,8 +94,7 @@ public class MainMenuManager : MonoBehaviour
         if (PhotonNetwork.IsConnectedAndReady)
         {
             PhotonNetworkManager.Instance?.JoinOrCreateRoom();
-            // Scene load now handled centrally in
-            // PhotonNetworkManager.OnJoinedRoom() — not here.
+          
         }
         else
         {
@@ -199,6 +205,13 @@ public class MainMenuManager : MonoBehaviour
     {
         if (_joinRoomPanel != null)
             _joinRoomPanel.SetActive(false);
+    }
+
+    public void OnLeaderboardClicked()
+    {
+        Debug.Log("[MainMenu] Leaderboard clicked");
+        ShowOnlyPanel(_leaderboardPanel);
+        _leaderboardPanel?.GetComponent<LeaderboardManager>()?.FetchAndDisplay();
     }
 
     private void OnQuitClicked()
