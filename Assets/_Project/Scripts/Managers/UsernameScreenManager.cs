@@ -34,7 +34,7 @@ public class UsernameScreenManager : MonoBehaviour
         _confirmButton.onClick.AddListener(OnConfirmClicked);
 
         _toggleModeButton?.onClick.AddListener(OnToggleModeClicked);
-        SetMode(true); // start in Register mode by default
+        SetMode(false); //start in login mode by default
 
         // hide error on start
         if (_errorText != null)

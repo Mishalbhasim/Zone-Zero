@@ -207,7 +207,7 @@ Animator:
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 7eeeada1df841a44f83a6e41731bfd70, type: 3}
   m_Controller: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
-  m_CullingMode: 1
+  m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _aimTarget: {fileID: 0}
-  _aimDistance: 50
+  _aimDistance: 10
   _isAiming: 0
 --- !u!136 &6076039628011357826
 CapsuleCollider:

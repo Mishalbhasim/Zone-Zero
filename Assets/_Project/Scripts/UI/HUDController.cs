@@ -127,6 +127,7 @@ public class HUDController : MonoBehaviour
     private void OnMatchStarted(int totalPlayers)
     {
         _totalPlayers = totalPlayers;
+        UpdatePlayersAlive(totalPlayers);
     }
 
     //Kill tracking

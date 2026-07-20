@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Photon.Pun;
 using StarterAssets;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerStateMachine : MonoBehaviourPun
 {
@@ -23,6 +24,10 @@ public class PlayerStateMachine : MonoBehaviourPun
     private Quaternion _originalSpineRotation;
     [SerializeField] private Vector3 aimRotationOffset = new Vector3(0, 100f, 0);
 
+
+    private RigBuilder _rigBuilder;
+
+
     void Start()
     {
         if (!photonView.IsMine) return;
@@ -43,10 +48,12 @@ public class PlayerStateMachine : MonoBehaviourPun
         _tpc = GetComponent<ThirdPersonController>();
         _aimTargetController = GetComponent<AimTargetController>();
 
+        
+
         // disable ragdoll on start
         foreach (var rb in GetComponentsInChildren<Rigidbody>())
             rb.isKinematic = true;
-    }
+    }   
 
     void Update()
     {
@@ -72,19 +79,23 @@ public class PlayerStateMachine : MonoBehaviourPun
     }
 
     private void LateUpdate()
-    {
-        if (!photonView.IsMine) return;
-        if (_spine2 == null) return;
+{
+    if (!photonView.IsMine) return;
+    if (_spine2 == null) return;
 
-        if (_aimTimer > 0)
-        {
-            _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(0, 50, 0);
-        }
-        else
-        {
-            _spine2.localRotation = _originalSpineRotation;
-        }
+    if (_aimTimer > 0)
+    {
+        float pitch = Camera.main.transform.eulerAngles.x;
+        if (pitch > 180f) pitch -= 360f; 
+        pitch = Mathf.Clamp(pitch, -40f, 40f); 
+
+        _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(pitch, 50, 0);
     }
+    else
+    {
+        _spine2.localRotation = _originalSpineRotation;
+    }
+}
 
     void OnEnable()
     {
