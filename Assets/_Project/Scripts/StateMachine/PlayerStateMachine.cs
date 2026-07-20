@@ -79,23 +79,23 @@ public class PlayerStateMachine : MonoBehaviourPun
     }
 
     private void LateUpdate()
-{
-    if (!photonView.IsMine) return;
-    if (_spine2 == null) return;
-
-    if (_aimTimer > 0)
     {
-        float pitch = Camera.main.transform.eulerAngles.x;
-        if (pitch > 180f) pitch -= 360f; 
-        pitch = Mathf.Clamp(pitch, -40f, 40f); 
+        if (!photonView.IsMine) return;
+        if (_spine2 == null) return;
 
-        _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(pitch, 50, 0);
+        if (_aimTimer > 0)
+        {
+            float pitch = Camera.main.transform.eulerAngles.x;
+            if (pitch > 180f) pitch -= 360f; // convert to -180..180 range
+            pitch = Mathf.Clamp(pitch, -40f, 40f); // limit so the spine doesn't over-rotate
+
+            _spine2.localRotation = _originalSpineRotation * Quaternion.Euler(pitch, 50, 0);
+        }
+        else
+        {
+            _spine2.localRotation = _originalSpineRotation;
+        }
     }
-    else
-    {
-        _spine2.localRotation = _originalSpineRotation;
-    }
-}
 
     void OnEnable()
     {

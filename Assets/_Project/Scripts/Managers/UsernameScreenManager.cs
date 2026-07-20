@@ -149,7 +149,7 @@ public class UsernameScreenManager : MonoBehaviour
 
     private void OnRegisterSuccess(RegisterPlayFabUserResult result)
     {
-        Debug.Log("[Auth] Registration successful");
+        
         _confirmButton.interactable = true;
         CompleteLogin(_usernameInput.text.Trim());
     }
@@ -169,7 +169,7 @@ public class UsernameScreenManager : MonoBehaviour
 
     private void OnLoginSuccess(LoginResult result)
     {
-        Debug.Log("[Auth] Login successful");
+       
         _confirmButton.interactable = true;
         CompleteLogin(_usernameInput.text.Trim());
     }
@@ -199,8 +199,7 @@ public class UsernameScreenManager : MonoBehaviour
 
     private void CompleteLogin(string username)
     {
-        // Set PlayFab display name so leaderboards show the real username,
-        // not the raw PlayFabId.
+       
         var request = new UpdateUserTitleDisplayNameRequest
         {
             DisplayName = username
@@ -210,8 +209,7 @@ public class UsernameScreenManager : MonoBehaviour
             error => Debug.LogError($"[Auth] Failed to set display name: {error.GenerateErrorReport()}")
         );
 
-        // Save locally same as before, so the rest of the game
-        // (nickname, GameManager, Photon) works unchanged.
+        
         BootManager.SaveUsername(username);
         GameManager.Instance.TransitionTo(GameManager.GameState.MainMenu);
         SceneManager.LoadScene(MAINMENU_SCENE);

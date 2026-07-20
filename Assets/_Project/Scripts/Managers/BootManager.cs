@@ -12,14 +12,7 @@ public class BootManager : MonoBehaviour
 
     void Start()
     {
-        if (PlayerPrefs.HasKey(USERNAME_KEY))
-        {
-            Debug.Log("[BootManager] Previous username found → loading Login screen (pre-filled)");
-        }
-        else
-        {
-            Debug.Log("[BootManager] No previous username → loading Register screen");
-        }
+        
 
         SceneManager.LoadScene(USERNAME_SCENE);
     }
@@ -37,7 +30,5 @@ public class BootManager : MonoBehaviour
         Photon.Pun.PhotonNetwork.AuthValues = new AuthenticationValues(username);
 
         
-
-        Debug.Log($"[BootManager] Username saved: {username}");
     }
 }

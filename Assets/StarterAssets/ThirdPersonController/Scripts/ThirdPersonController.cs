@@ -75,6 +75,7 @@ namespace StarterAssets
         private CharacterController _controller;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
+        private PhotonView _photonView;
 
         private const float _threshold = 0.01f;
         private bool _hasAnimator;
@@ -93,6 +94,8 @@ namespace StarterAssets
 
         private void Awake()
         {
+            _photonView = GetComponent<PhotonView>();
+
             if (_mainCamera == null)
                 _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         }
@@ -115,6 +118,8 @@ namespace StarterAssets
 
         private void Update()
         {
+            if (_photonView != null && !_photonView.IsMine) return;
+
             // removed TryGetComponent from Update ← fix
             JumpAndGravity();
             GroundedCheck();
@@ -123,6 +128,8 @@ namespace StarterAssets
 
         private void LateUpdate()
         {
+            if (_photonView != null && !_photonView.IsMine) return;
+
             CameraRotation();
         }
 

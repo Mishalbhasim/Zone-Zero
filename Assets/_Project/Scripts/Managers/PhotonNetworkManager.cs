@@ -11,7 +11,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public bool IsInRoom => PhotonNetwork.InRoom;
     public int PlayerCount => PhotonNetwork.CurrentRoom?.PlayerCount ?? 0;
     [SerializeField] private GameObject _playerPrefab;
-    public string SelectedRegion { get; set; } = "in"; // default: India
+    public string SelectedRegion { get; set; } = "in"; // defaultis India
 
     public string CurrentRoomCode { get; private set; }
 
@@ -27,7 +27,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = SelectedRegion;
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
-        Debug.Log($"[PhotonNetworkManager] Connecting to region: {SelectedRegion}...");
+        
     }
 
     public void JoinOrCreateRoom()
@@ -38,13 +38,13 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void OnJoinRandomFailed(short code, string msg)
     {
-        Debug.Log("[PhotonNetworkManager] No room found → creating new room");
+        // if no room then create new room
         var options = new RoomOptions { MaxPlayers = 30 };
         string roomName = $"ZZ_{Random.Range(1000, 9999)}";
         PhotonNetwork.CreateRoom(roomName, options, TypedLobby.Default);
     }
 
-    // ---- Private "Friends" room with a short shareable code ----
+    //private room with code
 
     public void CreatePrivateRoom()
     {
@@ -59,7 +59,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
         };
 
         PhotonNetwork.CreateRoom(CurrentRoomCode, options, TypedLobby.Default);
-        Debug.Log($"[PhotonNetworkManager] Creating private room with code: {CurrentRoomCode}");
+        
     }
 
     public void JoinRoomByCode(string code)
@@ -69,7 +69,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     private string GenerateRoomCode()
     {
-        // no easily-confused characters like 0/O or 1/I
+        
         const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         var code = new System.Text.StringBuilder();
         for (int i = 0; i < 6; i++)
@@ -79,7 +79,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void LeaveRoom() => PhotonNetwork.LeaveRoom();
 
-    // ── Callbacks ────────────────────────────
+    //Callbacks
     public void OnConnected() { }
 
     public void OnConnectedToMaster()
@@ -88,12 +88,12 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
 
     public void OnDisconnected(DisconnectCause cause)
     {
-        Debug.LogWarning($"[PhotonNetworkManager] Disconnected: {cause}");
+        
     }
 
     public void OnJoinedRoom()
     {
-        Debug.Log($"[PhotonNetworkManager] Joined room. Seed: {MapSeed}");
+      
         if (PhotonNetwork.IsMasterClient)
         {
             var props = new ExitGames.Client.Photon.Hashtable();
@@ -106,10 +106,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
                 MapSeed = (int)seed;
         }
 
-        // Single source of truth for the Lobby transition — this fires
-        // for every path: Play (JoinOrCreateRoom), Create Room
-        // (Photon calls OnCreatedRoom then OnJoinedRoom for the
-        // creator), and Join Room by code (JoinRoomByCode).
+        
         UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
     }
 
@@ -118,7 +115,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     {
         SpawnLocalPlayer();
         BotManager.Instance?.SpawnBots(MapSeed, PhotonNetwork.CurrentRoom.PlayerCount);
-        Debug.Log($"[PhotonNetworkManager] Arena loaded. Local: {GameManager.Instance?.LocalPlayerId}");
+       
     }
 
     private void SpawnLocalPlayer()
@@ -137,9 +134,7 @@ public class PhotonNetworkManager : Singleton<PhotonNetworkManager>,
     public void OnCreatedRoom()
     {
         Debug.Log("[PhotonNetworkManager] Room created successfully.");
-        // OnJoinedRoom() fires right after this for the room creator
-        // too (Photon calls both) — the actual scene load happens
-        // there, so this stays log-only / a hook for future use.
+        
     }
 
     public void OnCreateRoomFailed(short code, string msg)

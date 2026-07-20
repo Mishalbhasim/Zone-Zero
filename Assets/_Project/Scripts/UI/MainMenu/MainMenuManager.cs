@@ -15,6 +15,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _joinRoomButton;
     [SerializeField] private Button _closeFriendsPanelButton;
     [SerializeField] private Button _leaderboardButton;
+    [SerializeField] private Button _closeLeaderboardPanelButton;
 
     [Header("Panels")]
     [SerializeField] private GameObject _settingsPanel;
@@ -33,6 +34,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Button _confirmJoinButton;
     [SerializeField] private Button _closeJoinRoomPanelButton;
 
+
     void Start()
     {
         // set version text
@@ -47,14 +49,13 @@ public class MainMenuManager : MonoBehaviour
             {
                 "India", "Asia", "Japan", "Europe", "US West"
             });
-            _regionDropdown.value = 0; // default: India
+            _regionDropdown.value = 0; // default value is  India
             _regionDropdown.onValueChanged.AddListener(OnRegionChanged);
         }
 
         // wire buttons
         _playButton?.onClick.AddListener(OnPlayClicked);
         _friendsButton?.onClick.AddListener(OnFriendsClicked);
-        _settingsButton?.onClick.AddListener(OnSettingsClicked);
         _quitButton?.onClick.AddListener(OnQuitClicked);
         _createRoomButton?.onClick.AddListener(OnCreateRoomClicked);
         _joinRoomButton?.onClick.AddListener(OnJoinRoomClicked);
@@ -62,6 +63,7 @@ public class MainMenuManager : MonoBehaviour
         _confirmJoinButton?.onClick.AddListener(OnConfirmJoinClicked);
         _closeJoinRoomPanelButton?.onClick.AddListener(OnCloseJoinRoomPanelClicked);
         _leaderboardButton?.onClick.AddListener(OnLeaderboardClicked);
+        _closeLeaderboardPanelButton?.onClick.AddListener(OnCloseLeaderboardPanelClicked);
 
         // hide panels on start
         if (_settingsPanel != null)
@@ -87,7 +89,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnPlayClicked()
     {
-        Debug.Log("[MainMenu] Play clicked → joining room");
+       
 
         PhotonNetworkManager.Instance?.Connect();
 
@@ -98,9 +100,18 @@ public class MainMenuManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[MainMenu] Not connected yet — waiting");
+          
             StartCoroutine(WaitAndJoin());
         }
+    }
+
+    private System.Collections.IEnumerator WaitAndJoin()
+    {
+        while (!PhotonNetwork.IsConnectedAndReady)
+            yield return null;
+
+        PhotonNetworkManager.Instance?.JoinOrCreateRoom();
+
     }
 
     private void OnRegionChanged(int index)
@@ -113,14 +124,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator WaitAndJoin()
-    {
-        while (!PhotonNetwork.IsConnectedAndReady)
-            yield return null;
-
-        PhotonNetworkManager.Instance?.JoinOrCreateRoom();
-        // Scene load handled by PhotonNetworkManager.OnJoinedRoom().
-    }
+    
 
     private void OnFriendsClicked()
     {
@@ -128,11 +132,7 @@ public class MainMenuManager : MonoBehaviour
         ShowOnlyPanel(_friendsPanel);
     }
 
-    private void OnSettingsClicked()
-    {
-        Debug.Log("[MainMenu] Settings clicked");
-        ShowOnlyPanel(_settingsPanel);
-    }
+   
 
     private void OnCloseFriendsPanelClicked()
     {
@@ -142,7 +142,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnCreateRoomClicked()
     {
-        Debug.Log("[MainMenu] Create Room clicked");
+
         PhotonNetworkManager.Instance?.Connect();
         StartCoroutine(WaitAndCreateRoom());
     }
@@ -160,13 +160,12 @@ public class MainMenuManager : MonoBehaviour
             yield return null;
 
         PhotonNetworkManager.Instance?.CreatePrivateRoom();
-        // Scene load handled by PhotonNetworkManager.OnJoinedRoom()
-        // once Photon confirms the room was actually created and joined.
+        
     }
 
     private void OnJoinRoomClicked()
     {
-        Debug.Log("[MainMenu] Join Room clicked");
+       
         ShowOnlyPanel(_joinRoomPanel);
     }
 
@@ -180,7 +179,7 @@ public class MainMenuManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[MainMenu] Attempting to join room with code: {code}");
+    
         PhotonNetworkManager.Instance?.Connect();
         StartCoroutine(WaitAndJoinByCode(code));
     }
@@ -198,7 +197,7 @@ public class MainMenuManager : MonoBehaviour
             yield return null;
 
         PhotonNetworkManager.Instance?.JoinRoomByCode(code);
-        // Scene load handled by PhotonNetworkManager.OnJoinedRoom().
+        
     }
 
     private void OnCloseJoinRoomPanelClicked()
@@ -209,14 +208,20 @@ public class MainMenuManager : MonoBehaviour
 
     public void OnLeaderboardClicked()
     {
-        Debug.Log("[MainMenu] Leaderboard clicked");
+ 
         ShowOnlyPanel(_leaderboardPanel);
         _leaderboardPanel?.GetComponent<LeaderboardManager>()?.FetchAndDisplay();
     }
 
+
+    private void OnCloseLeaderboardPanelClicked()
+    {
+        if (_leaderboardPanel != null)
+            _leaderboardPanel.SetActive(false);
+    }
     private void OnQuitClicked()
     {
-        Debug.Log("[MainMenu] Quit clicked");
+
         Application.Quit();
     }
 }

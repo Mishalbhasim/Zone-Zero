@@ -46,6 +46,7 @@ public class HUDController : MonoBehaviour
     [SerializeField] private GameObject _gameplayHUD;
     [SerializeField] private GameObject _joystickCanvas;
     private bool _isDead = false;
+    private bool _hasWon = false;
 
     void Start()
     {
@@ -140,6 +141,8 @@ public class HUDController : MonoBehaviour
 
     private void ShowDeathScreen()
     {
+        if (_hasWon) return;  
+
         _gameplayHUD?.SetActive(false);
         _joystickCanvas?.SetActive(false);
 
@@ -196,6 +199,8 @@ public class HUDController : MonoBehaviour
         if (_victoryScreen == null) return;
         _victoryScreen.SetActive(true);
 
+        _hasWon = true;
+
         string localId = GameManager.Instance?.LocalPlayerId ?? "";
         bool isLocalWinner = winnerId == localId;
 
@@ -219,7 +224,7 @@ public class HUDController : MonoBehaviour
     {
         Debug.Log("[HUD] Returning to lobby");
 
-        // disable auto sync before leaving
+        
         PhotonNetwork.AutomaticallySyncScene = false;
 
         if (PhotonNetwork.InRoom)
