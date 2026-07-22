@@ -73,7 +73,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        Debug.Log($"[LobbyManager] Joined room. Players: {PhotonNetwork.CurrentRoom.PlayerCount}");
+       
         UpdateUI();
         RefreshPlayerList();
         Invoke(nameof(TryStartCountdown), 0.5f);
@@ -81,7 +81,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        Debug.Log($"[LobbyManager] Player joined: {newPlayer.NickName}");
+        
         UpdateUI();
         RefreshPlayerList();
 
@@ -143,7 +143,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     private void TryStartCountdown()
     {
-        Debug.Log($"[LobbyManager] TryStartCountdown called. IsMaster: {PhotonNetwork.IsMasterClient}");
+        
         if (_countingDown) return;
         if (!PhotonNetwork.IsMasterClient) return;
         if (PhotonNetwork.CurrentRoom.PlayerCount >= _minPlayers)
@@ -156,7 +156,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void RPC_StartCountdown(double startTimestamp)
     {
-        Debug.Log("[LobbyManager] RPC_StartCountdown received");
+        
         if (_countingDown) return;
         _countingDown = true;
         double elapsed = PhotonNetwork.Time - startTimestamp;
@@ -171,7 +171,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         if (_matchStarting) return;
         _matchStarting = true;
 
-        Debug.Log("[LobbyManager] Starting match!");
+ 
         _timerText.text = "GO!";
         _timerLabel.text = "";
 

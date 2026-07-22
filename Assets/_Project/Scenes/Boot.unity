@@ -271,7 +271,6 @@ GameObject:
   - component: {fileID: 1125342873}
   - component: {fileID: 1125342872}
   - component: {fileID: 1125342871}
-  - component: {fileID: 1125342870}
   - component: {fileID: 1125342869}
   - component: {fileID: 1125342875}
   m_Layer: 0
@@ -295,28 +294,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerPrefab: {fileID: 7475396813665540527, guid: 8383e31a10e794744a223f42cebe9d6f,
     type: 3}
---- !u!114 &1125342870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1125342868}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf731434497fff3499d81d1f3e766428, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _bootScreen: {fileID: 0}
-  _loginScreen: {fileID: 0}
-  _mainMenuScreen: {fileID: 0}
-  _lobbyScreen: {fileID: 0}
-  _hudScreen: {fileID: 0}
-  _deathScreen: {fileID: 0}
-  _scoreboardScreen: {fileID: 0}
-  _leaderboardScreen: {fileID: 0}
-  _profileScreen: {fileID: 0}
-  _settingsScreen: {fileID: 0}
 --- !u!114 &1125342871
 MonoBehaviour:
   m_ObjectHideFlags: 0
